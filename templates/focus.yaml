@@ -1,0 +1,166 @@
+runconfig:
+    groups:
+        input_file_group:
+            input_file_path:
+            -   165426740.h5
+            qa_input_file: ./slc.h5
+        dynamic_ancillary_file_group:
+            dem_file:
+            dem_file_description:
+            orbit:
+            pointing:
+            external_calibration:
+            internal_calibration:
+            antenna_pattern:
+            corner_reflector_file:
+            polarimetric_calibration:
+            bookend_calibration:
+            waveform:
+        product_path_group:
+            product_path: ./RSLC
+            scratch_path: ./RSLC
+            sas_output_file: RSLC/165426740.h5
+            sas_config_file: rslc_focus_165426740.yaml
+            qa_output_dir: ./qa
+        primary_executable:
+            product_type: RSLC
+        geometry:
+            relative_orbit_number: 1
+            frame_number: 150
+        worker:
+            gpu_enabled: true
+            gpu_id: 0
+        processing:
+            output_grid:
+                start_time:
+                end_time:
+                start_range:
+                end_range:
+                output_prf:
+                time_snap_interval: 1.0
+            range_window:
+                kind: Cosine
+                shape: 0.5
+            azimuth_window:
+                kind: Kaiser
+                shape: 0.0
+            radio_frequency_interference:
+                detection_enabled: true
+                mitigation_enabled: false
+                mitigation_algorithm: ST-EVD
+                cpi_length: 32
+                num_range_blocks: 1
+                max_emitters: 16
+                detection_threshold: 1.0
+            range_common_band_filter:
+                attenuation: 40.0
+                width: 0.15
+            doppler:
+                azimuth_boresight_deg: 0.0
+                interp_method: bilinear
+                spacing:
+                    range: 2000.0
+                    azimuth: 1.0
+                rdr2geo:
+                    threshold: 1e-06
+                    maxiter: 25
+                    extraiter: 15
+            rangecomp:
+                mode: valid
+                block_size:
+                    range: 0
+                    azimuth: 1024
+            azcomp:
+                block_size:
+                    range: 0
+                    azimuth: 1024
+                azimuth_resolution: 5.5
+                kernel:
+                    type: Knab
+                    halfwidth: 4
+                    approx_oversample: 1.7
+                    fit: Table
+                    fit_order: 2048
+                rdr2geo:
+                    threshold: 1e-06
+                    maxiter: 100
+                    extraiter: 15
+                geo2rdr:
+                    threshold: 1e-06
+                    maxiter: 100
+                    delta_range: 10.0
+            dry_troposphere_model: nodelay
+            dem:
+                reference_height: 0.0
+                interp_method: biquintic
+            nominal_antenna_size:
+                range: 3.1
+                azimuth: 8.9
+            encoding_scale_factor: 1.0
+            delete_tempfiles: true
+            debug_dump_height: false
+            is_enabled:
+                presum_blu: true
+                rangecomp: true
+                eap: false
+                range_cor: false
+                azcomp: true
+                rfi_removal: false
+        qa:
+            workflows:
+                validate: false
+                qa_reports: false
+                absolute_radiometric_calibration: false
+                noise_estimation: false
+                point_target_analyzer: false
+            qa_reports:
+                power_image:
+                    linear_units: true
+                    nlooks_freqa:
+                    nlooks_freqb:
+                    num_mpix: 4.0
+                    middle_percentile: 90.0
+                    gamma: 0.5
+                    tile_shape:
+                    -   1024
+                    -   1024
+                histogram:
+                    decimation_ratio:
+                    -   10
+                    -   10
+                    pow_histogram_bin_edges_range:
+                    -   -80.0
+                    -   20.0
+                    phs_in_radians: true
+                    tile_shape:
+                    -   1024
+                    -   -1
+            absolute_radiometric_calibration:
+                freq:
+                pol:
+                nchip: 64
+                upsample: 32
+                peak_find_domain: time
+                nfit: 5
+                power_method: box
+                pthresh: 3.0
+            noise_estimation:
+                freq_group:
+                pol:
+                rng_start:
+                rng_stop:
+                algorithm: avg
+                cpi: 2
+            point_target_analyzer:
+                freq_group:
+                pol:
+                predict_null: false
+                num_sidelobes: 10
+                nov: 32
+                chipsize: 64
+                shift_domain: time
+        archive:
+            quicklook: true
+        qaqc:
+            report: foo
+        profiler: {}
