@@ -1,0 +1,35 @@
+{
+  "submission_type": "iteration",
+  "params": [
+    {
+      "name": "username",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "username"
+    },
+    {
+      "name": "password",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "password"
+    },
+    {
+      "name": "rslc_1",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "https://datapool.asf.alaska.edu/L1.0/A3/ALPSRP274410710-L1.0.zip"
+    },
+    {
+      "name": "rslc_2",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "https://datapool.asf.alaska.edu/L1.0/A3/ALPSRP267700710-L1.0.zip"
+    }
+  ],
+  "component": "tosca",
+  "label": "ALOS to RSLC PGE"
+}

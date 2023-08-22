@@ -1,0 +1,34 @@
+{
+  "command": "notebook-pge-wrapper execute /home/jovyan/alos-to-insar/notebook_pges/rslc_to_insar.ipynb",
+  "time_limit": 3600,
+  "soft_time_limit": 3600,
+  "disk_usage": "20GB",
+  "required_queues": [
+    "factotum-job_worker-small"
+  ],
+  "imported_worker_files": {
+    "$HOME/.aws": "/home/jovyan/.aws"
+  },
+  "params": [
+    {
+      "name": "username",
+      "destination": "context"
+    },
+    {
+      "name": "password",
+      "destination": "context"
+    },
+    {
+      "name": "rslc_1",
+      "destination": "context"
+    },
+    {
+      "name": "rslc_2",
+      "destination": "context"
+    },
+    {
+      "name": "dem",
+      "destination": "context"
+    }
+  ]
+}
