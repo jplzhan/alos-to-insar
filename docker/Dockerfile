@@ -2,7 +2,7 @@ FROM nvidia/cuda:11.5.2-devel-centos7
 
 USER root
 
-ENV HOME=/home/ops \
+ENV HOME=/home/jovyan \
     CONDA_DIR=/opt/conda \
     PATH=/opt/conda/bin:$PATH
 
