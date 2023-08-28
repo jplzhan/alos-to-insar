@@ -8,13 +8,25 @@ ENV HOME=/home/jovyan \
 
 RUN set -ex \
     # miniconda setup
+    && yum install -y wget \
+    && yum update -y \
+    && yum install -y curl sudo less bzip2 zip unzip centos-release-scl-rh yum-utils which file make configure \
+                      autoconf ImageMagick openssh-clients httpd \
+    && yum install -y environment-modules emacs.x86_64 make.x86_64 \
+    && yum clean all \
+    && echo 'skip_missing_names_on_install=False' >> /etc/yum.conf \
+    && rm -rf /var/cache/yum
+
+RUN set -ex \
     && curl -sSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh \
     && bash miniconda.sh -b -p /opt/conda \
     && rm miniconda.sh \
     && touch /opt/conda/conda-meta/pinned \
     && conda update -n base -c conda-forge conda \
     && conda install -y git \
-    && conda config --set show_channel_urls True
+    && conda config --set show_channel_urls True \
+    && conda install -y -c conda-forge mamba \
+    && conda init bash
 
 # copy your repo into the docker container
 ################################################
@@ -22,10 +34,6 @@ COPY . $HOME/alos-to-insar
 ################################################
 
 WORKDIR $HOME
-
-RUN set -ex \
-    && conda install -y -c conda-forge mamba \
-    && conda init bash
     
 SHELL ["conda", "run", "-n", "base", "/bin/bash", "-c"]
 
