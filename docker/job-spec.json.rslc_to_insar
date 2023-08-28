@@ -29,6 +29,22 @@
     {
       "name": "dem",
       "destination": "context"
+    },
+    {
+      "name": "key",
+      "destination": "context"
+    },
+    {
+      "name": "secret",
+      "destination": "context"
+    },
+    {
+      "name": "token",
+      "destination": "context"
+    },
+    {
+      "name": "region",
+      "destination": "context"
     }
   ]
 }

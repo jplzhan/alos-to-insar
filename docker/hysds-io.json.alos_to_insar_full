@@ -35,6 +35,34 @@
       "type": "text",
       "description": "string",
       "default": "url"
+    },
+    {
+      "name": "key",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "secret",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "token",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "region",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
     }
   ],
   "component": "tosca",
