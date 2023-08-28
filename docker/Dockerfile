@@ -24,10 +24,14 @@ COPY . $HOME/alos-to-insar
 WORKDIR $HOME
 
 RUN set -ex \
-    && conda env update -n base -f $HOME/alos-to-insar/environment.yml \
+    && conda install -y -c conda-forge mamba \
     && conda init bash
-
+    
 SHELL ["conda", "run", "-n", "base", "/bin/bash", "-c"]
+
+RUN mamba env create -f $HOME/alos-to-insar/environment.yml -p isce3_src
+
+SHELL ["conda", "run", "-n", "isce3_src", "/bin/bash", "-c"]
 
 RUN set -ex \
     && cd $HOME \
@@ -47,10 +51,10 @@ RUN set -ex \
 
 RUN set -ex \
     && cd $HOME/isce3_build \
-    && cmake -DCMAKE_INSTALL_PREFIX="/home/ops/isce3_build" $HOME/isce3/ \
+    && cmake -DCMAKE_INSTALL_PREFIX="/home/jovyan/isce3_build" $HOME/isce3/ \
     && make -j 4 install
 
-ENV PYTHONPATH="/home/ops/isce3_build/packages:${PYTHONPATH}"
-ENV LD_LIBRARY_PATH="/home/ops/isce3_build/lib64:${LD_LIBRARY_PATH}"
+ENV PYTHONPATH="/home/jovyan/isce3_build/packages:${PYTHONPATH}"
+ENV LD_LIBRARY_PATH="/home/jovyan/isce3_build/lib64:${LD_LIBRARY_PATH}"
 
 CMD ["/bin/bash", "--login"]
