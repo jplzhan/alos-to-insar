@@ -25,7 +25,7 @@ WORKDIR $HOME
     
 SHELL ["mamba", "run", "-n", "base", "/bin/bash", "-c"]
 
-RUN mamba env create -f $HOME/alos-to-insar/environment.yml -p isce3_src
+RUN mamba env create -f $HOME/alos-to-insar/environment.yml -n isce3_src -p /opt/conda/envs/isce3_src
 
 SHELL ["mamba", "run", "-n", "isce3_src", "/bin/bash", "-c"]
 
