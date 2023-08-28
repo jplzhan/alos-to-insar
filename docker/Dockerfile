@@ -7,26 +7,14 @@ ENV HOME=/home/jovyan \
     PATH=/opt/conda/bin:$PATH
 
 RUN set -ex \
-    # miniconda setup
-    && yum install -y wget \
-    && yum update -y \
-    && yum install -y curl sudo less bzip2 zip unzip centos-release-scl-rh yum-utils which file make configure \
-                      autoconf ImageMagick openssh-clients httpd \
-    && yum install -y environment-modules emacs.x86_64 make.x86_64 \
-    && yum clean all \
-    && echo 'skip_missing_names_on_install=False' >> /etc/yum.conf \
-    && rm -rf /var/cache/yum
-
-RUN set -ex \
-    && curl -sSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh \
+    && curl -sSL https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh -o miniconda.sh \
     && bash miniconda.sh -b -p /opt/conda \
     && rm miniconda.sh \
     && touch /opt/conda/conda-meta/pinned \
-    && conda update -n base -c conda-forge conda \
-    && conda install -y git \
-    && conda config --set show_channel_urls True \
-    && conda install -y -c conda-forge mamba \
-    && conda init bash
+    && mamba update -c conda-forge conda \
+    && mamba install -y git \
+    && mamba config --set show_channel_urls True \
+    && mamba init bash
 
 # copy your repo into the docker container
 ################################################
@@ -35,15 +23,15 @@ COPY . $HOME/alos-to-insar
 
 WORKDIR $HOME
     
-SHELL ["conda", "run", "-n", "base", "/bin/bash", "-c"]
+SHELL ["mamba", "run", "-n", "base", "/bin/bash", "-c"]
 
 RUN mamba env create -f $HOME/alos-to-insar/environment.yml -p isce3_src
 
-SHELL ["conda", "run", "-n", "isce3_src", "/bin/bash", "-c"]
+SHELL ["mamba", "run", "-n", "isce3_src", "/bin/bash", "-c"]
 
 RUN set -ex \
     && cd $HOME \
-    && conda install -y -c conda-forge nb_conda_kernels \
+    && mamba install -y -c conda-forge nb_conda_kernels \
     && git clone https://github.com/hysds/notebook_pge_wrapper.git \
     && cd notebook_pge_wrapper \
     && pip install -e .
