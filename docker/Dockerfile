@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.5.2-devel-centos7
+RUNFROM nvidia/cuda:11.5.2-devel-centos7
 
 USER root
 
@@ -32,7 +32,9 @@ RUN set -ex \
     && cd notebook_pge_wrapper \
     && pip install -e .
 
-RUN mamba env create -f $HOME/alos-to-insar/environment.yml -n isce3_src
+RUN set -ex \
+    && mamba env create -f $HOME/alos-to-insar/environment.yml -n isce3_src \
+    && mamba run -n isce3_src python -m ipykernel install --user --name isce3_src --display-name "isce3_src"
 
 SHELL ["mamba", "run", "-n", "isce3_src", "/bin/bash", "-c"]
 
