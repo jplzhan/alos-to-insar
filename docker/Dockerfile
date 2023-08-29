@@ -25,16 +25,16 @@ WORKDIR $HOME
     
 SHELL ["mamba", "run", "-n", "base", "/bin/bash", "-c"]
 
-RUN mamba env create -f $HOME/alos-to-insar/environment.yml -n isce3_src
-
-SHELL ["mamba", "run", "-n", "isce3_src", "/bin/bash", "-c"]
-
 RUN set -ex \
     && cd $HOME \
     && mamba install -y -c conda-forge nb_conda_kernels \
     && git clone https://github.com/hysds/notebook_pge_wrapper.git \
     && cd notebook_pge_wrapper \
     && pip install -e .
+
+RUN mamba env create -f $HOME/alos-to-insar/environment.yml -n isce3_src
+
+SHELL ["mamba", "run", "-n", "isce3_src", "/bin/bash", "-c"]
 
 ENV CUDAHOSTCXX=x86_64-conda-linux-gnu-g++ \
     CC=x86_64-conda-linux-gnu-gcc \
