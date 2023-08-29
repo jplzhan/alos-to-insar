@@ -1,4 +1,4 @@
-RUNFROM nvidia/cuda:11.5.2-devel-centos7
+FROM nvidia/cuda:11.5.2-devel-centos7
 
 USER root
 
