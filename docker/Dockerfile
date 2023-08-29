@@ -49,10 +49,10 @@ RUN set -ex \
 
 RUN set -ex \
     && cd $HOME/isce3_build \
-    && cmake -DCMAKE_INSTALL_PREFIX="/home/jovyan/isce3_build" $HOME/isce3/ \
+    && cmake -DCMAKE_INSTALL_PREFIX="${HOME}/isce3_build" $HOME/isce3/ \
     && make -j 4 install
 
-ENV PYTHONPATH="/home/jovyan/isce3_build/packages:${PYTHONPATH}"
+ENV PYTHONPATH="${HOME}/alos-to-insar/notebook_pges:${HOME}/isce3_build/packages:${PYTHONPATH}"
 ENV LD_LIBRARY_PATH="/home/jovyan/isce3_build/lib64:${LD_LIBRARY_PATH}"
 
 CMD ["/bin/bash", "--login"]
