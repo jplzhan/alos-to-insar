@@ -4,7 +4,8 @@ USER root
 
 ENV HOME=/home/jovyan \
     CONDA_DIR=/opt/conda \
-    PATH=/opt/conda/bin:$PATH
+    PATH=/opt/conda/bin:$PATH \
+    DOCKER_TARGETS_DIR=/opt/workingdir
 
 RUN set -ex \
     && curl -sSL https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh -o miniconda.sh \
@@ -45,14 +46,14 @@ ENV CUDAHOSTCXX=x86_64-conda-linux-gnu-g++ \
 RUN set -ex \
     && cd $HOME \
     && git clone https://github.com/isce-framework/isce3.git \
-    && mkdir $HOME/isce3_build
+    && mkdir $HOME/isce3/build
 
 RUN set -ex \
-    && cd $HOME/isce3_build \
-    && cmake -DCMAKE_INSTALL_PREFIX="${HOME}/isce3_build" $HOME/isce3/ \
+    && cd $HOME/isce3/build \
+    && cmake -DCMAKE_INSTALL_PREFIX="${HOME}/isce3/build" $HOME/isce3/ \
     && make -j 4 install
 
-ENV PYTHONPATH="${HOME}/alos-to-insar/notebook_pges:${HOME}/isce3_build/packages:${PYTHONPATH}"
-ENV LD_LIBRARY_PATH="/home/jovyan/isce3_build/lib64:${LD_LIBRARY_PATH}"
+ENV PYTHONPATH="${HOME}/alos-to-insar/notebook_pges:${HOME}/isce3/build/packages:${PYTHONPATH}"
+ENV LD_LIBRARY_PATH="/home/jovyan/isce3/build/lib64:${LD_LIBRARY_PATH}"
 
 CMD ["/bin/bash", "--login"]
