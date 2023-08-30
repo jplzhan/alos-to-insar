@@ -8,6 +8,8 @@ ENV HOME=/home/jovyan \
     DOCKER_TARGETS_DIR=/opt/workingdir
 
 RUN set -ex \
+    && mkdir $DOCKER_TARGETS_DIR \
+    && chmod 775 $DOCKER_TARGETS_DIR \
     && curl -sSL https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh -o miniconda.sh \
     && bash miniconda.sh -b -p /opt/conda \
     && rm miniconda.sh \
