@@ -6,6 +6,8 @@ ENV HOME=/home/jovyan \
     CONDA_DIR=/opt/conda \
     PATH=/opt/conda/bin:$PATH
 
+ENV NOTEBOOK_PGE_DIR=${HOME}/alos-to-insar/notebook_pges
+
 RUN set -ex \
     && useradd -m -s /bin/bash -N -u 1006 -r -d /home/jovyan jovyan \
     && echo "jovyan ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
@@ -54,7 +56,7 @@ RUN set -ex \
     && cmake -DCMAKE_INSTALL_PREFIX="${HOME}/isce3/build" $HOME/isce3/ \
     && make -j 4 install
 
-ENV PYTHONPATH="${HOME}/alos-to-insar/notebook_pges:${HOME}/isce3/build/packages:${PYTHONPATH}"
+ENV PYTHONPATH="${NOTEBOOK_PGE_DIR}:${HOME}/isce3/build/packages:${PYTHONPATH}"
 ENV LD_LIBRARY_PATH="/home/jovyan/isce3/build/lib64:${LD_LIBRARY_PATH}"
 
 CMD ["/bin/bash", "--login"]
