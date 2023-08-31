@@ -4,12 +4,11 @@ USER root
 
 ENV HOME=/home/jovyan \
     CONDA_DIR=/opt/conda \
-    PATH=/opt/conda/bin:$PATH \
-    DOCKER_TARGETS_DIR=/opt/workingdir
+    PATH=/opt/conda/bin:$PATH
 
 RUN set -ex \
-    && mkdir $DOCKER_TARGETS_DIR \
-    && chmod 775 $DOCKER_TARGETS_DIR \
+    && useradd -m -s /bin/bash -N -u 1006 -r -d /home/jovyan jovyan \
+    && echo "jovyan ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
     && curl -sSL https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh -o miniconda.sh \
     && bash miniconda.sh -b -p /opt/conda \
     && rm miniconda.sh \
