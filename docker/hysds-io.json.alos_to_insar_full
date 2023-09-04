@@ -37,6 +37,13 @@
       "default": "url"
     },
     {
+      "name": "gpu_enabled",
+      "from": "submitter",
+      "type": "text",
+      "description": "boolean",
+      "default": true
+    },
+    {
       "name": "key",
       "from": "submitter",
       "type": "text",
@@ -66,5 +73,5 @@
     }
   ],
   "component": "tosca",
-  "label": "ALOS to INSAR FULL PGE"
+  "label": "RSLC to INSAR PGE"
 }

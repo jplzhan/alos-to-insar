@@ -11,14 +11,6 @@
   },
   "params": [
     {
-      "name": "username",
-      "destination": "context"
-    },
-    {
-      "name": "password",
-      "destination": "context"
-    },
-    {
       "name": "rslc_1",
       "destination": "context"
     },
@@ -28,6 +20,22 @@
     },
     {
       "name": "dem",
+      "destination": "context"
+    },
+    {
+      "name": "dem_params",
+      "destination": "context"
+    },
+    {
+      "name": "gpu_enabled",
+      "destination": "context"
+    },
+    {
+      "name": "s3_upload",
+      "destination": "context"
+    },
+    {
+      "name": "s3_url",
       "destination": "context"
     },
     {

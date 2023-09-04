@@ -2,32 +2,18 @@
   "submission_type": "iteration",
   "params": [
     {
-      "name": "username",
-      "from": "submitter",
-      "type": "text",
-      "description": "string",
-      "default": "username"
-    },
-    {
-      "name": "password",
-      "from": "submitter",
-      "type": "text",
-      "description": "string",
-      "default": "password"
-    },
-    {
       "name": "rslc_1",
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "https://datapool.asf.alaska.edu/L1.0/A3/ALPSRP274410710-L1.0.zip"
+      "default": "s3://nisar-st-data-ondemand/ADT_Testing/output/0.h5"
     },
     {
       "name": "rslc_2",
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "https://datapool.asf.alaska.edu/L1.0/A3/ALPSRP267700710-L1.0.zip"
+      "default": "s3://nisar-st-data-ondemand/ADT_Testing/output/1.h5"
     },
     {
       "name": "dem",
@@ -35,6 +21,34 @@
       "type": "text",
       "description": "string",
       "default": "url"
+    },
+    {
+      "name": "dem_params",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "-b -123 35 -121 38"
+    },
+    {
+      "name": "gpu_enabled",
+      "from": "submitter",
+      "type": "text",
+      "description": "boolean",
+      "default": false
+    },
+    {
+      "name": "s3_upload",
+      "from": "submitter",
+      "type": "text",
+      "description": "boolean",
+      "default": false
+    },
+    {
+      "name": "s3_url",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "s3://nisar-st-data-ondemand/ADT_Testing/"
     },
     {
       "name": "key",

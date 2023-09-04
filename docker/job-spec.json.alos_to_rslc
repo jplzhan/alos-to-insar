@@ -19,11 +19,19 @@
       "destination": "context"
     },
     {
-      "name": "rslc_1",
+      "name": "data_link",
       "destination": "context"
     },
     {
-      "name": "rslc_2",
+      "name": "gpu_enabled",
+      "destination": "context"
+    },
+    {
+      "name": "s3_upload",
+      "destination": "context"
+    },
+    {
+      "name": "s3_url",
       "destination": "context"
     },
     {

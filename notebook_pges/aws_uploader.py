@@ -2,6 +2,9 @@
 import logging
 import boto3
 import shutil
+from urllib.parse import urlparse
+from botocore import UNSIGNED
+from botocore.config import Config
 from botocore.exceptions import ClientError
 import os
 
@@ -57,3 +60,28 @@ class AWS:
                     obj_name = os.path.join(parent[prefix_len:], obj_name)
                 obj_name = obj_name.lstrip('/')
                 self.upload_file(os.path.join(parent, fname), bucket, obj_name)
+
+    @staticmethod
+    def download_s3(url: str, dest_file: str, cred: dict = None) -> str:
+        """Download a file from an S3 URL.
+        Args:
+            url (str): S3 URL of input file.
+            dest_file (str): Absolute file path to download towards.
+            cred (dict): The credential dictionary to be passed into the boto3.client.
+        Returns:
+            str: relative path to the staged-in input file
+        """
+
+        # Create the parent directory if it does not exist
+        os.makedirs(os.path.dirname(dest_file), exist_ok=True)
+
+        if cred is None:
+            s3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+        else:
+            s3 = boto3.client('s3', **cred)
+
+        # download input file
+        p = urlparse(url)
+        s3.download_file(p.netloc, p.path[1:], dest_file)
+
+        return dest_file
