@@ -27,14 +27,14 @@
       "from": "submitter",
       "type": "text",
       "description": "boolean",
-      "default": true
+      "default": "1"
     },
     {
       "name": "s3_upload",
       "from": "submitter",
       "type": "text",
       "description": "boolean",
-      "default": false
+      "default": "0"
     },
     {
       "name": "s3_url",

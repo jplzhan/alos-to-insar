@@ -41,7 +41,7 @@
       "from": "submitter",
       "type": "text",
       "description": "boolean",
-      "default": true
+      "default": "1"
     },
     {
       "name": "key",
