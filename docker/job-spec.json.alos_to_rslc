@@ -1,7 +1,7 @@
 {
   "command": "notebook-pge-wrapper execute /home/jovyan/alos-to-insar/notebook_pges/alos_to_rslc.ipynb",
-  "time_limit": 3600,
-  "soft_time_limit": 3600,
+  "time_limit": 86400,
+  "soft_time_limit": 86400,
   "disk_usage": "10GB",
   "required_queues": [
     "factotum-job_worker-small"
