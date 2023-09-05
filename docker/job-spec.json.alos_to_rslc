@@ -3,6 +3,9 @@
   "time_limit": 86400,
   "soft_time_limit": 86400,
   "disk_usage": "10GB",
+  "runtime_options": {
+    "gpus": "all"
+  },
   "required_queues": [
     "factotum-job_worker-small"
   ],
@@ -10,14 +13,6 @@
     "$HOME/.aws": "/home/jovyan/.aws"
   },
   "params": [
-    {
-      "name": "username",
-      "destination": "context"
-    },
-    {
-      "name": "password",
-      "destination": "context"
-    },
     {
       "name": "data_link",
       "destination": "context"

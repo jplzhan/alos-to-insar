@@ -3,6 +3,9 @@
   "time_limit": 86400,
   "soft_time_limit": 86400,
   "disk_usage": "20GB",
+  "runtime_options": {
+    "gpus": "all"
+  },
   "required_queues": [
     "factotum-job_worker-small"
   ],

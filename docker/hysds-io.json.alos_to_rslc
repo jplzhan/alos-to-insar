@@ -2,20 +2,6 @@
   "submission_type": "iteration",
   "params": [
     {
-      "name": "username",
-      "from": "submitter",
-      "type": "text",
-      "description": "string",
-      "default": "username"
-    },
-    {
-      "name": "password",
-      "from": "submitter",
-      "type": "text",
-      "description": "string",
-      "default": "password"
-    },
-    {
       "name": "data_link",
       "from": "submitter",
       "type": "text",
