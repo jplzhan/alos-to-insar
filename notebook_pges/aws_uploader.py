@@ -76,7 +76,7 @@ class AWS:
         os.makedirs(os.path.dirname(dest_file), exist_ok=True)
 
         if cred is None:
-            s3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+            s3 = boto3.client('s3')
         else:
             s3 = boto3.client('s3', **cred)
 
