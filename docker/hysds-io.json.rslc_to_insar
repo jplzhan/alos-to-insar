@@ -6,28 +6,21 @@
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "s3://nisar-st-data-ondemand/ADT_Testing/output/0.h5"
+      "default": "s3://nisar-adt-cc-ondemand/ALOS-1-data/RSLC/ALPSRP267700710-L1.0.h5"
     },
     {
       "name": "rslc_2",
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "s3://nisar-st-data-ondemand/ADT_Testing/output/1.h5"
+      "default": "s3://nisar-adt-cc-ondemand/ALOS-1-data/RSLC/ALPSRP274410710-L1.0.h5"
     },
     {
-      "name": "dem",
+      "name": "dem_s3_url",
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "url"
-    },
-    {
-      "name": "dem_params",
-      "from": "submitter",
-      "type": "text",
-      "description": "string",
-      "default": "-b -123 35 -121 38"
+      "default": "s3://nisar-adt-cc-ondemand/DEM/dem.tiff"
     },
     {
       "name": "gpu_enabled",
@@ -41,14 +34,14 @@
       "from": "submitter",
       "type": "text",
       "description": "boolean",
-      "default": "0"
+      "default": "1"
     },
     {
       "name": "s3_url",
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "s3://nisar-st-data-ondemand/ADT_Testing/"
+      "default": "s3://nisar-adt-cc-ondemand/ALOS-1-data/GUNW"
     },
     {
       "name": "key",

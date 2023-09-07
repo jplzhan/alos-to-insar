@@ -22,11 +22,7 @@
       "destination": "context"
     },
     {
-      "name": "dem",
-      "destination": "context"
-    },
-    {
-      "name": "dem_params",
+      "name": "dem_s3_url",
       "destination": "context"
     },
     {

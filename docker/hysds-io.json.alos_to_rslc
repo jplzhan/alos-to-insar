@@ -6,7 +6,7 @@
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "https://datapool.asf.alaska.edu/L1.0/A3/ALPSRP274410710-L1.0.zip"
+      "default": "s3://nisar-adt-cc-ondemand/ALOS-1-data/ALPSRP274410710-L1.0.zip"
     },
     {
       "name": "gpu_enabled",
@@ -20,14 +20,14 @@
       "from": "submitter",
       "type": "text",
       "description": "boolean",
-      "default": "0"
+      "default": "1"
     },
     {
       "name": "s3_url",
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "s3://nisar-st-data-ondemand/ADT_Testing/"
+      "default": "s3://nisar-adt-cc-ondemand/ALOS-1-data/RSLC"
     },
     {
       "name": "key",
