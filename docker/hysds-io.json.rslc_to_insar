@@ -20,7 +20,7 @@
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "s3://nisar-adt-cc-ondemand/DEM/dem.tiff"
+      "default": "s3://nisar-adt-cc-ondemand/DEM-static/dem.tiff"
     },
     {
       "name": "gpu_enabled",
