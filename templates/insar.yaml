@@ -67,7 +67,8 @@ runconfig:
             qa_output_dir: ./qa
 
         primary_executable:
-            product_type: ROFF_RIFG_RUNW_GOFF_GUNW
+            # ROFF_RIFG_RUNW_GOFF_GUNW
+            product_type: GUNW
 
         debug_level_group:
             debug_switch: false
