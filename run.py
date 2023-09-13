@@ -138,6 +138,10 @@ def main() -> int:
     ]
     s3_urls = [f's3://{bucket_name}/ALOS-1-data/{b}' for b in basefile_names]
     
+    # Read in AWS credentials
+    config.read(f'{os.environ["HOME"]}/.aws/credentials')
+    cred = config['saml-pub']
+
     for basefile_name in basefile_names:
         basefile = f'/home/jovyan/otello/data/{basefile_name}'
         s3_url = f's3://{bucket_name}/ALOS-1-data/{basefile_name}'
@@ -149,7 +153,7 @@ def main() -> int:
         if path[1:] not in s3_objects:
             print(f'========={path[1:]} not found in S3 object paths: {s3_objects}===========')
             print(f'Now uploading {basefile} to bucket {bucket}...')
-            uploader = AWS('', '', '', '', configdir=False)
+            uploader = AWS(cred['aws_access_key_id'], cred['aws_secret_access_key'], cred['aws_session_token'], cred['region'])
             uploader.upload_file(basefile, bucket, path)
         else:
             print(f'{path[1:]} found in S3 object paths, now continuing...\n')
@@ -230,8 +234,6 @@ def main() -> int:
     if True:
         config = configparser.ConfigParser()
         print('=========REMEMBER TO RUN "aws-login.linux.amd64" FOR A ROLE IN THE "saml-pub" PROFILE!!!!==========')
-        config.read(f'{os.environ["HOME"]}/.aws/credentials')
-        cred = config['saml-pub']
         if job_name.startswith('job-alos_to_rslc'):
             for s3_url in s3_urls:
                 jt.set_input_params({
