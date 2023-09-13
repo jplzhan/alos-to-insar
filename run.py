@@ -248,19 +248,22 @@ def main() -> int:
             rslc_job_set = otello.JobSet()
             rslc_s3_urls = [f's3://nisar-adt-cc-ondemand/ALOS-1-data/RSLC/{os.path.splitext(b)[0]}.h5' for b in basefile_names]
             to_generate = []
+            rslc_jt = m.get_job_type(f'job-alos_to_rslc:{branch}')
+            rslc_jt.initialize()
+
             for alos_url, url in zip(s3_urls, rslc_s3_urls):
                 if not AWS.s3_url_exists(url):
                     print(f'{url} does not exist, submitting RSLC job...')
-                    jt.set_input_params({
-                        "data_link": alos_url,
-                        "gpu_enabled": "1",
-                        "s3_upload": "1",
+                    rslc_jt.set_input_params({
+                        'data_link': alos_url,
+                        'gpu_enabled': "1",
+                        's3_upload': "1",
                         'region': cred['region'],
                         'key': cred['aws_access_key_id'],
                         'secret': cred['aws_secret_access_key'],
                         'token': cred['aws_session_token'],
                     })
-                    rslc_job_set.append(jt.submit_job(queue=rslc_queue))
+                    rslc_job_set.append(rslc_jt.submit_job(queue=rslc_queue))
                     to_generate.append(url)
             if len(rslc_job_set) > 0:
                 rslc_job_set.wait_for_completion()
