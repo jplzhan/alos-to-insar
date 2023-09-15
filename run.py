@@ -67,12 +67,12 @@ class AWS:
                 self.upload_file(os.path.join(parent, fname), bucket, obj_name)
 
     @staticmethod
-    def list_s3(url: str) -> list:
+    def list_s3(url: str, prefix: str='') -> list:
         s3 = boto3.resource('s3')
         my_bucket = s3.Bucket(url)
 
         ret = []
-        for object_summary in my_bucket.objects.filter(Prefix=''):
+        for object_summary in my_bucket.objects.filter(Prefix=prefix):
             ret.append(object_summary.key)
         return ret
 
@@ -108,7 +108,7 @@ class AWS:
         bucket = parsed_url.netloc
         path = parsed_url.path
         
-        return path[1:] in AWS.list_s3(parsed_url.netloc)
+        return path[1:] in AWS.list_s3(parsed_url.netloc, prefix=parsed_url.path)
 
 
 
@@ -127,6 +127,7 @@ def main() -> int:
     args = parser.parse_args()
     
     bucket_name = 'nisar-adt-cc-ondemand'
+    bucket_prefix = 'ALOS-1-data'
     basefile_names = [
         # 'ALPSRP099950710-L1.0.zip',
         # 'ALPSRP106660710-L1.0.zip',
@@ -136,7 +137,7 @@ def main() -> int:
         'ALPSRP267700710-L1.0.zip',
         'ALPSRP274410710-L1.0.zip',
     ]
-    s3_urls = [f's3://{bucket_name}/ALOS-1-data/{b}' for b in basefile_names]
+    s3_urls = [f's3://{bucket_name}/{bucket_prefix}/{b}' for b in basefile_names]
     
     # Read in AWS credentials
     config = configparser.ConfigParser()
@@ -144,20 +145,25 @@ def main() -> int:
     cred = config['saml-pub']
 
     for basefile_name in basefile_names:
-        basefile = f'/home/jovyan/otello/data/{basefile_name}'
-        s3_url = f's3://{bucket_name}/ALOS-1-data/{basefile_name}'
-        s3_objects = AWS.list_s3(bucket_name)
+        basefile = f'./data/{basefile_name}'
+        s3_url = f's3://{bucket_name}/{bucket_prefix}/{basefile_name}'
+        s3_objects = AWS.list_s3(bucket_name, prefix=f'{bucket_prefix}/')
         parsed_url = urlparse(s3_url)
         bucket = parsed_url.netloc
         path = parsed_url.path
+        
+        if path.startswith('/'):
+            path = path[1:]
+        if path.endswith('/'):
+            path = path[:-1]
 
-        if path[1:] not in s3_objects:
-            print(f'========={path[1:]} not found in S3 object paths...===========')
+        if path not in s3_objects:
+            print(f'========={path} not found in S3 object paths: {s3_objects}===========')
             print(f'Now uploading {basefile} to bucket {bucket}...')
             uploader = AWS(cred['aws_access_key_id'], cred['aws_secret_access_key'], cred['aws_session_token'], cred['region'])
             uploader.upload_file(basefile, bucket, path)
         else:
-            print(f'{path[1:]} found in S3 object paths, now continuing...\n')
+            print(f'{path} found in S3 object paths, now continuing...\n')
 
     # Jenkins docker build
     branch = "v1.1"
@@ -238,9 +244,9 @@ def main() -> int:
         if job_name.startswith('job-alos_to_rslc'):
             for s3_url in s3_urls:
                 jt.set_input_params({
-                    "data_link": s3_url,
-                    "gpu_enabled": "1",
-                    "s3_upload": "1",
+                    'data_link': s3_url,
+                    'gpu_enabled': '1',
+                    's3_upload': '1',
                     'region': cred['region'],
                     'key': cred['aws_access_key_id'],
                     'secret': cred['aws_secret_access_key'],
@@ -249,7 +255,7 @@ def main() -> int:
                 job_set.append(jt.submit_job(queue=rslc_queue))
         elif job_name.startswith('job-rslc_to_insar'):
             rslc_job_set = otello.JobSet()
-            rslc_s3_urls = [f's3://nisar-adt-cc-ondemand/ALOS-1-data/RSLC/{os.path.splitext(b)[0]}.h5' for b in basefile_names]
+            rslc_s3_urls = [f's3://nisar-adt-cc-ondemand/{bucket_prefix}/RSLC/{os.path.splitext(b)[0]}.h5' for b in basefile_names]
             to_generate = []
             rslc_jt = m.get_job_type(f'job-alos_to_rslc:{branch}')
             rslc_jt.initialize()
@@ -259,8 +265,8 @@ def main() -> int:
                     print(f'{url} does not exist, submitting RSLC job...')
                     rslc_jt.set_input_params({
                         'data_link': alos_url,
-                        'gpu_enabled': "1",
-                        's3_upload': "1",
+                        'gpu_enabled': '1',
+                        's3_upload': '1',
                         'region': cred['region'],
                         'key': cred['aws_access_key_id'],
                         'secret': cred['aws_secret_access_key'],
@@ -299,9 +305,9 @@ def main() -> int:
 
     job_set_status = job_set.wait_for_completion()
     print(job_set_status)
-    print("\n============================= DONE ====================================\n")
+    print('\n============================= DONE ====================================\n')
     
     return 0
     
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
