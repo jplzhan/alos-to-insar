@@ -139,6 +139,7 @@ def main() -> int:
     s3_urls = [f's3://{bucket_name}/ALOS-1-data/{b}' for b in basefile_names]
     
     # Read in AWS credentials
+    config = configparser.ConfigParser()
     config.read(f'{os.environ["HOME"]}/.aws/credentials')
     cred = config['saml-pub']
 
@@ -151,7 +152,7 @@ def main() -> int:
         path = parsed_url.path
 
         if path[1:] not in s3_objects:
-            print(f'========={path[1:]} not found in S3 object paths: {s3_objects}===========')
+            print(f'========={path[1:]} not found in S3 object paths...===========')
             print(f'Now uploading {basefile} to bucket {bucket}...')
             uploader = AWS(cred['aws_access_key_id'], cred['aws_secret_access_key'], cred['aws_session_token'], cred['region'])
             uploader.upload_file(basefile, bucket, path)
