@@ -108,7 +108,14 @@ class AWS:
         bucket = parsed_url.netloc
         path = parsed_url.path
         
-        return path[1:] in AWS.list_s3(parsed_url.netloc, prefix=parsed_url.path)
+        if path.startswith('/'):
+            path = path[1:]
+        if path.endswith('/'):
+            path = path[:-1]
+        if bucket.endswith('/'):
+            bucket = bucket[:-1]
+
+        return path in AWS.list_s3(bucket, prefix=path)
 
 
 
@@ -156,6 +163,8 @@ def main() -> int:
             path = path[1:]
         if path.endswith('/'):
             path = path[:-1]
+        if bucket.endswith('/'):
+            bucket = bucket[:-1]
 
         if path not in s3_objects:
             print(f'========={path} not found in S3 object paths: {s3_objects}===========')
@@ -255,7 +264,7 @@ def main() -> int:
                 job_set.append(jt.submit_job(queue=rslc_queue))
         elif job_name.startswith('job-rslc_to_insar'):
             rslc_job_set = otello.JobSet()
-            rslc_s3_urls = [f's3://nisar-adt-cc-ondemand/{bucket_prefix}/RSLC/{os.path.splitext(b)[0]}.h5' for b in basefile_names]
+            rslc_s3_urls = [f's3://{bucket_name}/{bucket_prefix}/RSLC/{os.path.splitext(b)[0]}.h5' for b in basefile_names]
             to_generate = []
             rslc_jt = m.get_job_type(f'job-alos_to_rslc:{branch}')
             rslc_jt.initialize()
