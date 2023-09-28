@@ -38,6 +38,10 @@
       "destination": "context"
     },
     {
+      "name": "insar_config",
+      "destination": "context"
+    },
+    {
       "name": "key",
       "destination": "context"
     },

@@ -30,6 +30,13 @@
       "default": "s3://nisar-adt-cc-ondemand/ALOS-1-data/RSLC"
     },
     {
+      "name": "focus_config",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
       "name": "key",
       "from": "submitter",
       "type": "text",

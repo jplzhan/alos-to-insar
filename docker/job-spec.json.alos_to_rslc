@@ -30,6 +30,10 @@
       "destination": "context"
     },
     {
+      "name": "focus_config",
+      "destination": "context"
+    },
+    {
       "name": "key",
       "destination": "context"
     },

@@ -44,6 +44,13 @@
       "default": "s3://nisar-adt-cc-ondemand/ALOS-1-data/GUNW"
     },
     {
+      "name": "insar_config",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
       "name": "key",
       "from": "submitter",
       "type": "text",
