@@ -245,12 +245,6 @@ def main() -> int:
     
     rslc_queue = 'nisar-job_worker-sciflo-rslc'
     insar_queue = 'nisar-job_worker-sciflo-insar'
-    if rslc_queue not in queues['queues']['queues']:
-        print(f'Cannot find queue with name "{rslc_queue} in list of queues:"', queues['queues']['queues'])
-        return 1
-    if insar_queue not in queues['queues']['queues']:
-        print(f'Cannot find queue with name "{insar_queue} in list of queues:"', queues['queues']['queues'])
-        return 1
     
     jt.describe()
 
