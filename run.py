@@ -184,7 +184,7 @@ def main() -> int:
             print(f'{path} found in S3 object paths, now continuing...\n')
 
     # Jenkins docker build
-    branch = "v1.2"
+    branch = "v1.2.1"
     ci = otello.CI(repo="https://github.com/jplzhan/alos-to-insar.git", branch=branch)
         
     try:
