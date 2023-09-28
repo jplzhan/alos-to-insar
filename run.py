@@ -140,8 +140,10 @@ def main() -> int:
     
     bucket_name = 'nisar-adt-cc-ondemand'
     bucket_prefix = 'ALOS-1-data'
-    focus_config = yaml.safe_load(os.path.join(SCRIPT_DIR, 'templates', 'focus.yaml'))
-    insar_config = yaml.safe_load(os.path.join(SCRIPT_DIR, 'templates', 'insar.yaml'))
+    with open(os.path.join(SCRIPT_DIR, 'templates', 'focus.yaml'), 'r') as f:
+        focus_config = f.read()
+    with open(os.path.join(SCRIPT_DIR, 'templates', 'insar.yaml'), 'r') as f:
+        insar_config = f.read()
     basefile_names = [
         # 'ALPSRP099950710-L1.0.zip',
         # 'ALPSRP106660710-L1.0.zip',
@@ -264,7 +266,7 @@ def main() -> int:
                     'gpu_enabled': '1',
                     's3_upload': '1',
                     's3_url': f's3://{bucket_name}/{bucket_prefix}/RSLC',
-                    'focus_config': focus_config,
+                    'focus_config': str(focus_config),
                     'region': cred['region'],
                     'key': cred['aws_access_key_id'],
                     'secret': cred['aws_secret_access_key'],
@@ -286,7 +288,7 @@ def main() -> int:
                         'gpu_enabled': '1',
                         's3_upload': '1',
                         's3_url': f's3://{bucket_name}/{bucket_prefix}/RSLC',
-                        'focus_config': focus_config,
+                        'focus_config': str(focus_config),
                         'region': cred['region'],
                         'key': cred['aws_access_key_id'],
                         'secret': cred['aws_secret_access_key'],
@@ -317,7 +319,7 @@ def main() -> int:
                         'gpu_enabled': '1',
                         's3_upload': '1',
                         's3_url': f's3://{bucket_name}/{bucket_prefix}/GUNW',
-                        'insar_config': insar_config,
+                        'insar_config': str(insar_config),
                         'region': cred['region'],
                         'key': cred['aws_access_key_id'],
                         'secret': cred['aws_secret_access_key'],
