@@ -196,7 +196,7 @@ def main() -> int:
     try:
         build_status = ci.get_build_status()
         print(build_status)
-        if build_status["result"] == "FAILURE" or args.rebuild:
+        if build_status["result"] != "SUCCESS": or args.rebuild:
             print("Last build failed, now rebuilding...")
             status = ci.submit_build()
             print(status)
