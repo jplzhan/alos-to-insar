@@ -138,7 +138,7 @@ def main() -> int:
     )
     args = parser.parse_args()
     
-    bucket_name = 'nisar-adt-cc-ondemand'
+    bucket_name = 'nisar-st-data-ondemand'
     bucket_prefix = 'ALOS-1-data'
     with open(os.path.join(SCRIPT_DIR, 'templates', 'focus.yaml'), 'r') as f:
         focus_config = f.read()
@@ -215,7 +215,7 @@ def main() -> int:
         time.sleep(30)
         build_status = ci.get_build_status()
 
-    if build_status["result"] == "FAILURE":
+    if build_status["result"] != "SUCCESS":
         print("\n<<<Submitted build failed, docker build must have crashed. Please check URL>>>\n")
         return 1
 
