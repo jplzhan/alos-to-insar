@@ -1,0 +1,57 @@
+{
+  "command": "notebook-pge-wrapper execute /home/jovyan/alos-to-insar/notebook_pges/rslc_to_gslc.ipynb",
+  "time_limit": 86400,
+  "soft_time_limit": 86400,
+  "disk_usage": "10GB",
+  "runtime_options": {
+    "gpus": "all"
+  },
+  "required_queues": [
+    "factotum-job_worker-small"
+  ],
+  "imported_worker_files": {
+    "$HOME/.aws": "/home/jovyan/.aws"
+  },
+  "params": [
+    {
+      "name": "data_link",
+      "destination": "context"
+    },
+    {
+      "name": "dem_s3_url",
+      "destination": "context"
+    },
+    {
+      "name": "gpu_enabled",
+      "destination": "context"
+    },
+    {
+      "name": "s3_upload",
+      "destination": "context"
+    },
+    {
+      "name": "s3_url",
+      "destination": "context"
+    },
+    {
+      "name": "gslc_config",
+      "destination": "context"
+    },
+    {
+      "name": "key",
+      "destination": "context"
+    },
+    {
+      "name": "secret",
+      "destination": "context"
+    },
+    {
+      "name": "token",
+      "destination": "context"
+    },
+    {
+      "name": "region",
+      "destination": "context"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "submission_type": "iteration",
+  "params": [
+    {
+      "name": "data_link",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "s3://nisar-st-data-ondemand/ALOS-1-data/RSLC/ALPSRP274410710-L1.0.h5"
+    },
+    {
+      "name": "dem_s3_url",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "s3://nisar-st-data-ondemand/DEM-static/dem.tiff"
+    },
+    {
+      "name": "gpu_enabled",
+      "from": "submitter",
+      "type": "text",
+      "description": "boolean",
+      "default": "1"
+    },
+    {
+      "name": "s3_upload",
+      "from": "submitter",
+      "type": "text",
+      "description": "boolean",
+      "default": "1"
+    },
+    {
+      "name": "s3_url",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "s3://nisar-st-data-ondemand/ALOS-1-data/GSLC"
+    },
+    {
+      "name": "gslc_config",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "key",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "secret",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "token",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "region",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    }
+  ],
+  "component": "tosca",
+  "label": "RSLC to GSLC PGE"
+}
