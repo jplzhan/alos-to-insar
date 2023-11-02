@@ -32,7 +32,7 @@ runconfig:
             sas_output_file: output_insar/product.h5
 
         primary_executable:
-            product_type: RIFG #_RUNW_GUNW
+            product_type: GUNW #_RUNW_GUNW
 
         debug_level_group:
             debug_switch: False
