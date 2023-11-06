@@ -1,0 +1,438 @@
+runconfig:
+    name: gcov_workflow_default
+
+    groups:
+        pge_name_group:
+            pge_name: GCOV_L_PGE
+
+        input_file_group:
+            # REQUIRED - One NISAR L1B RSLC formatted HDF5 file
+            input_file_path: ../RSLC/output_rslc_20081012/rslc.h5
+
+            # REQUIRED for QA. NOT REQUIRED if only running Product SAS.
+            # If Product SAS and QA SAS are run back-to-back,
+            # this field should be identical to `sas_output_file`.
+            # Otherwise, this field should contain the filename of the single
+            # NISAR product for QA to process.
+            qa_input_file: gcov.h5
+
+        dynamic_ancillary_file_group:
+            # REQUIRED - Digital elevation model
+            dem_file: ../GUNW/dem_0.tiff
+
+            # PLACEHOLDER - Digital elevation model file description, optional
+            dem_file_description:
+
+            # External orbit file
+            orbit_file:
+
+            # TEC file used for geolocation correction. If no file present, no
+            # TEC correction is applied
+            tec_file:
+
+        product_path_group:
+            # Directory where PGE will place results. Irrelevant to SAS.
+            product_path: product_path
+
+            # Directory where SAS can write temporary data
+            scratch_path: .
+
+            # SAS writes output product to the following file. PGE may rename.
+            # NOTE: For R2 will need to handle mixed-mode case with multiple outputs of RSLC workflow.
+            sas_output_file: gcov.h5
+
+            # REQUIRED for QA. NOT REQUIRED if only running Product SAS.
+            # Output directory to store all QA output files.
+            # Defaults to './qa'
+            qa_output_dir: ./qa
+
+        # Output options for GCOV terms (e.g., HHHH, HVHV, VVVV)
+        output_gcov_terms:
+            # PLACEHOLDER - Output format
+            format: HDF5
+
+            # Compression type. 'none' for no compression
+            compression_type: gzip
+
+            # Compression level
+            compression_level: 9
+
+            # PLACEHOLDER - Compression number of bits
+            nbits: 16
+
+        # Output options for secondary layers (e.g., number of looks, RTC ANF)
+        output_secondary_layers:
+            # PLACEHOLDER - Output format
+            format: HDF5
+
+            # Compression type. 'none' for no compression
+            compression_type: gzip
+
+            # Compression level
+            compression_level: 9
+
+            # PLACEHOLDER - Compression number of bits
+            nbits: 16
+
+        primary_executable:
+            product_type: GCOV
+            product_version: 0.1.0
+            partial_granule_id:
+
+        debug_level_group:
+            debug_switch: false
+
+        # TODO OPTIONAL - To setup type of worker
+        worker:
+            # OPTIONAL - To prevent downloading DEM / other data automatically. Default True
+            internet_access: False
+
+            # OPTIONAL - To explicitly use GPU capability if available. Default False
+            gpu_enabled: False
+
+            # Index of the GPU to use for processing, optional. Defaults to the
+            # first available CUDA device. Ignored if *gpu_enabled* is False.
+            gpu_id: 0
+
+        #adt section - isce3 + pyre workflow
+        processing:
+            input_subset:
+                # Frequencies and polarizations to process
+                # Keys for frequency A and B followed by a list of polarizations to process:
+                #     {frequency}: [polarizations]
+                #
+                # - If the entire field is left empty, all available frequencies will be processed.
+                # - Otherwise, only frequencies listed (i.e, 'A' and/or 'B') will be processed.
+                # - If the [polarizations] list is empty, all available polarizations
+                # for given frequency will be processed
+                #
+                # Example 1:
+                #     list_of_frequencies:  # (empty) process all polarizations from all
+                #                           # available frequencies
+                # Example 2:
+                #     list_of_frequencies:
+                #         A: [HH, HV]  # process only polarizations HH and HV from frequency A
+                #         B:           # process all polarizations from frequency B
+                #
+                #
+                list_of_frequencies:
+
+                # OPTIONAL - If we want full covariance instead of diagonals only. Default False
+                fullcovariance:   False
+
+                # Perform polarimetric symmetrization. It's only applicable
+                # for quad-polarimetric datasets (i.e. datasets that include
+                # HV and VH), otherwise, the flag is ignored.
+                # If enabled, the output product's "HV" dataset will contain symmetrized
+                # HV/VH data and the "VH" dataset will be omitted from the output.
+                symmetrize_cross_pol_channels:  True
+
+            # TODO OPTIONAL - Only checked when internet access is available
+            dem_download:
+                # OPTIONAL - s3 bucket / curl URL / local file
+                source:
+                top_left:
+                    x:
+                    y:
+                bottom_right:
+                    x:
+                    y:
+
+            # OPTIONAL - if amplitude data needs to be mulitlooked before GCOV generation
+            pre_process:
+               azimuth_looks: 1
+               range_looks:   1
+
+            # OPTIONAL - to control behavior of RTC module
+            # (only applicable if geocode.apply_rtc is True)
+            rtc:
+                # OPTIONAL - Choices:
+                # "gamma0" (default)
+                # "sigma0"
+                output_type: gamma0
+
+                # OPTIONAL - Choices:
+                # "bilinear_distribution" (default)
+                # "area_projection"
+                algorithm_type: area_projection
+
+                # OPTIONAL - Choices:
+                # "beta0" (default)
+                # "sigma0"
+                input_terrain_radiometry: sigma0
+
+                # OPTIONAL - Minimum RTC area factor in dB
+                rtc_min_value_db:
+
+                # RTC DEM upsampling
+                dem_upsampling: 2
+
+                # RTC area beta mode. Options:
+                # 'auto' - Default value is defined by the RTC algorithm that is being
+                #     executed, i.e., 'pixel_area' for 'algorithm_type' equal to
+                #     'bilinear_distribution' and 'projection_angle' for
+                #     'algorithm_type' equal to 'area_projection'
+                #  'pixel_area' - Estimate the beta surface reference area `A_beta`
+                #     using the pixel area, which is the product of the range spacing
+                #     by the azimuth spacing (computed using the ground velocity)
+                #  'projection_angle' - estimate the beta surface reference area `A_beta`
+                #     using the projection angle method:
+                #     `A_beta = A_sigma * cos(projection_angle)`
+                area_beta_mode: pixel_area
+
+            # OPTIONAL - Mechanism to specify output posting and DEM
+            geocode:
+
+                # Geocoding algorithm type. Choices "area_projection"
+                # for adaptive multilooking or an interpolation algorithm:
+                # "sinc", "bilinear", "bicubic", "nearest", and "biquintic"
+                algorithm_type: area_projection
+
+                # Apply radiometric terrain correction
+                apply_rtc: True
+
+                # Apply RSLC metadata valid-samples sub-swath masking
+                apply_valid_samples_sub_swath_masking: False
+
+                # Apply shadow masking
+                apply_shadow_masking: True
+
+                # Memory mode. Choices: "single_block", "geogrid", "geogrid_and_radargrid", and "auto" (default)
+                memory_mode:
+
+                # OPTIONAL - Processing upsampling factor applied to input geogrid
+                geogrid_upsampling: 1
+
+                # Save the number of looks used to compute GCOV
+                save_nlooks: True
+
+                # Save the area normalization factor (ANF) to normalize GCOV
+                # imagery to the original SLC backscatter convention:
+                # beta0 or sigma0 (ellipsoid)
+                save_rtc_anf: False
+
+                # Save the RTC area normalization factor (ANF) gamma0 to sigma0
+                save_rtc_anf_gamma0_to_sigma0: True
+
+                # Save interpolated DEM used to compute GCOV
+                save_dem: False
+
+                # PLACEHOLDER - Save layover shadow mask
+                save_layover_shadow_mask: False
+
+                # PLACEHOLDER - Save the incidence angle
+                save_incidence_angle: False
+
+                # PLACEHOLDER - Save the local-incidence angle
+                save_local_inc_angle: False
+
+                # PLACEHOLDER - Save the projection angle
+                save_projection_angle: False
+
+                # PLACEHOLDER - Save the range slope angle
+                save_range_slope: False
+
+                # OPTIONAL - Absolute radiometric correction
+                abs_rad_cal: 1
+
+                # OPTIONAL - Clip values above threshold
+                clip_max:
+
+                # OPTIONAL - Clip values below threshold
+                clip_min:
+
+                # OPTIONAL - Double sampling of the radar-grid
+                # input sampling in the range direction
+                upsample_radargrid: False
+
+                # OPTIONAL - Same as input DEM if not provided.
+                output_epsg: 32611
+
+                # OPTIONAL - Spacing between pixels, in same units as output EPSG.
+                # If not provided, spacing values will be taken from provided DEM.
+                # All postings/spacings must be > 0.
+                # ISCE3 output rasters always have North-up West-left orientation
+                output_posting:
+                    A:
+                        x_posting: 20
+                        y_posting: 20
+                    B:
+                        x_posting: 
+                        y_posting:
+
+                # OPTIONAL - To control output grid in same units as output EPSG
+                y_snap: 20
+
+                # OPTIONAL - To control output grid in same units as output EPSG
+                x_snap: 20
+
+                # OPTIONAL - Can control with absolute values or with snap values
+               
+                top_left:
+                    # OPTIONAL - Set top-left y in same units as output EPSG
+                    y_abs:  3913615.0
+                    # OPTIONAL - Set top-left x in same units as output EPSG
+                    x_abs:  365480.0
+                # OPTIONAL - Can control with absolute values or with snap values
+                bottom_right:
+                    y_abs:  3789220.0
+                    x_abs:  456380.0
+
+                # Minimum block size in MB per thread
+                min_block_size:
+
+                # Maximum block size in MB per thread
+                max_block_size:
+
+            radar_grid_cubes:
+
+                # List of heights in meters
+                heights:
+
+                # OPTIONAL - Same as the geocode group output_epsg if not provided
+                output_epsg:
+
+                # OPTIONAL - Spacing between pixels, in same units as output EPSG.
+                # If not provided, spacing values will be taken from geocode group
+                # parameters.
+                # All postings/spacings must be > 0.
+                # ISCE3 output rasters always have North-up West-left orientation
+                output_posting:
+                    x_posting:
+                    y_posting:
+
+                # OPTIONAL - To control output grid in same units as output EPSG
+                y_snap:
+
+                # OPTIONAL - To control output grid in same units as output EPSG
+                x_snap:
+
+                # OPTIONAL - Can control with absolute values or with snap values
+                top_left:
+                    # OPTIONAL - Set top-left y in same units as output EPSG
+                    y_abs:
+                    # OPTIONAL - Set top-left x in same units as output EPSG
+                    x_abs:
+
+                # OPTIONAL - Can control with absolute values or with snap values
+                bottom_right:
+                    y_abs:
+                    x_abs:
+
+            geo2rdr:
+                threshold: 1.0e-8
+                maxiter: 100
+
+            dem_interpolation_method: biquintic
+
+            # OPTIONAL - if noise correction desired (for ISRO)
+            noise_correction:
+                # OPTIONAL -
+                apply_correction: False
+
+                # OPTIONAL -
+                correction_type:
+
+        qa:
+
+            workflows:
+
+                # Flag to run `validate` workflow to validate the
+                # input file against its product spec.
+                # Default: True
+                validate: true
+
+                # Flag to run `qa_reports` workflow to generate a
+                # PDF report, geolocated browse image, compute statistics
+                # on the input file, etc..
+                # Default: True
+                qa_reports: true
+
+            qa_reports:
+
+                backscatter_img:
+
+                    # True to compute backscatter in linear units when generating
+                    # the backscatter image for the browse images and graphical
+                    # summary PDF. False for decibel units.
+                    # Default: True
+                    linear_units: true
+
+                    # Number of looks along each axis of the Frequency A
+                    # image arrays for multilooking the backscatter image.
+                    # Format: [<num_rows>, <num_cols>]
+                    # Example: [6,7]
+                    # If not provided, the QA code to compute the nlooks values
+                    # based on `longest_side_max`.
+                    # Default: None
+                    nlooks_freqa:
+
+                    # Number of looks along each axis of the Frequency B
+                    # image arrays for multilooking the backscatter image.
+                    # Format: [<num_rows>, <num_cols>]
+                    # Example: [6,7]
+                    # If not provided, the QA code to compute the nlooks values
+                    # based on `longest_side_max`.
+                    # Default: None
+                    nlooks_freqb:
+
+                    # The maximum number of pixels allowed for the longest side
+                    # of the final 2D multilooked browse image. Defaults to 2048.
+                    # If `nlooks_freq*` parameter(s) is not None, nlooks
+                    # values will take precedence.
+                    # Default: 2048
+                    longest_side_max: 2048
+
+                    # Percentile range that the image array will be clipped to
+                    # and that the colormap covers. Must be in range [0.0, 100.0].
+                    # Default: (5.0, 95.0)
+                    percentile_for_clipping: [5.0, 95.0]
+
+                    # Gamma correction parameter applied to backscatter and browse image(s).
+                    # Gamma will be applied as follows:
+                    # array_out = normalized_array ^ gamma
+                    # where normalized_array is a copy of the image with values
+                    # scaled to the range [0,1].
+                    # The image colorbar will be defined with respect to the input
+                    # image values prior to normalization and gamma correction.
+                    # If None, then no normalization and no gamma correction will be applied.
+                    # Default: 0.5
+                    gamma: 0.5
+
+                    # User-preferred tile shape for processing images by batches.
+                    # Actual tile shape may be modified by QA to be an integer
+                    # multiple of the number of looks for multilooking, of the
+                    # decimation ratio, etc.
+                    # Format: [<num_rows>, <num_cols>]
+                    # -1 to indicate all rows / all columns (respectively).
+                    # Default: (1024, 1024)
+                    tile_shape: [1024, 1024]
+
+                histogram:
+
+                    # Step size to decimate the input array for computing
+                    # the backscatter and phase histograms.
+                    # For example, [2,3] means every 2nd azimuth line and
+                    # every 3rd range sample will be used to compute the histograms.
+                    # Format: [<azimuth>, <range>]
+                    # Default: (10, 10)
+                    decimation_ratio: [10, 10]
+
+                    # Range in dB for the backscatter histogram's bin edges. Endpoint will
+                    # be included. Format: [<starting value>, <endpoint>]
+                    # Default: (-80.0, 20.0)
+                    backscatter_histogram_bin_edges_range: [-80.0, 20.0]
+
+                    # True to compute phase histogram in radians units,
+                    # False for degrees units.
+                    # Default: True
+                    phs_in_radians: true
+
+                    # User-preferred tile shape for processing images by batches.
+                    # Actual tile shape may be modified by QA to be an integer
+                    # multiple of the number of looks for multilooking, of the
+                    # decimation ratio, etc.
+                    # Format: [<num_rows>, <num_cols>]
+                    # -1 to indicate all rows / all columns (respectively).
+                    # Default: (1024, -1)
+                    tile_shape: [1024, -1]
