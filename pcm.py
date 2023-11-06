@@ -202,6 +202,38 @@ class PCM:
             'token': self.aws_cred['aws_session_token'],
         })
         self.job_set.append(jt.submit_job(queue=queue))
+    
+    def run_rslc_to_gcov(self,
+                        data_link: str,
+                        dem: str,
+                        output_bucket: str, 
+                        gpu_enabled: bool=True,
+                        config: str='',
+                        queue: str='nisar-job_worker-sciflo-rslc'):
+        """Runs RSLC to GCOV.
+        
+        Input Parameters:
+            - data_link: S3 URL to the L0B data to be processed into RSLC.
+            - dem: S3 URL to the DEM to be processed.
+            - output_bucket: S3 bucket location to upload the GSLC result to.
+            - gpu_enabled: Whether to run focus.py using the GPU.
+            - config: YAML formatted string containing the config to pass to focus.py.
+            - queue: Name of the PCM queue to submit the job to (recommended is default).
+        """
+        jt = self.get_job('rslc_to_gcov')
+        jt.set_input_params({
+            'data_link': data_link,
+            'dem_s3_url': dem,
+            'gpu_enabled': '1' if gpu_enabled else '0',
+            's3_upload': '1',
+            's3_url': output_bucket,
+            'gslc_config': str(config),
+            'region': self.aws_cred['region'],
+            'key': self.aws_cred['aws_access_key_id'],
+            'secret': self.aws_cred['aws_secret_access_key'],
+            'token': self.aws_cred['aws_session_token'],
+        })
+        self.job_set.append(jt.submit_job(queue=queue))
 
     def run_rslc_to_insar(self,
                           rslc_1: str,
