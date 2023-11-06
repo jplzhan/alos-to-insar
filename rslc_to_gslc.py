@@ -60,7 +60,7 @@ def main() -> int:
     with open(args.config, 'r', encoding='utf-8') as f:
         config = f.read()
     pcm = PCM()
-    pcm.run_l0b_to_rslc(args.data_link, args.dem, args.output_bucket, config=config)
+    pcm.run_rslc_to_gslc(args.data_link, args.dem, args.output_bucket, config=config)
     
     pcm.wait_for_completion()
     
