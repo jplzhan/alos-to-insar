@@ -46,6 +46,7 @@ class PCM:
         self.build_pcm()
         self.mozart = otello.Mozart()
         self.job_set = otello.JobSet()
+        self.num_jobs = 0
         
         # TODO - Check that all job types exist
         self.job_types = self.mozart.get_job_types()
@@ -111,6 +112,7 @@ class PCM:
         
     def wait_for_completion(self):
         """Wait for all submitted jobs in the job set to complete."""
+        logger.info(f'Now waiting for completion of {len(self.job_set)} jobs...')
         self.job_set.wait_for_completion()
     
     def run_alos_to_rslc(self,
@@ -140,6 +142,7 @@ class PCM:
             'secret': self.aws_cred['aws_secret_access_key'],
             'token': self.aws_cred['aws_session_token'],
         })
+        logger.info(f'Submitting ALOS to RSLC conversion job for {data_link}...')
         self.job_set.append(jt.submit_job(queue=queue))
 
     def run_l0b_to_rslc(self,
@@ -169,6 +172,7 @@ class PCM:
             'secret': self.aws_cred['aws_secret_access_key'],
             'token': self.aws_cred['aws_session_token'],
         })
+        logger.info(f'Submitting L0B to RSLC conversion job for {data_link}...')
         self.job_set.append(jt.submit_job(queue=queue))
 
     def run_rslc_to_gslc(self,
@@ -201,6 +205,7 @@ class PCM:
             'secret': self.aws_cred['aws_secret_access_key'],
             'token': self.aws_cred['aws_session_token'],
         })
+        logger.info(f'Submitting RSLC to GSLC conversion job for {data_link}...')
         self.job_set.append(jt.submit_job(queue=queue))
     
     def run_rslc_to_gcov(self,
@@ -233,6 +238,7 @@ class PCM:
             'secret': self.aws_cred['aws_secret_access_key'],
             'token': self.aws_cred['aws_session_token'],
         })
+        logger.info(f'Submitting RSLC to GCOV conversion job for {data_link}...')
         self.job_set.append(jt.submit_job(queue=queue))
 
     def run_rslc_to_insar(self,
@@ -268,6 +274,7 @@ class PCM:
             'secret': self.aws_cred['aws_secret_access_key'],
             'token': self.aws_cred['aws_session_token'],
         })
+        logger.info(f'Submitting INSAR conversion job for {rslc_1} and {rslc_2}...')
         self.job_set.append(jt.submit_job(queue=queue))
         
     def get_job(self, job_name: str):

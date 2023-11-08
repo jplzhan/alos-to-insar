@@ -11,8 +11,9 @@ def main() -> int:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
-        'data_link',
+        'data_links',
         type=str,
+        nargs='+',
         help='S3 URL to the ALOS-1 data to convert to RSLC data.'
     )
     parser.add_argument(
@@ -60,7 +61,8 @@ def main() -> int:
     with open(args.config, 'r', encoding='utf-8') as f:
         config = f.read()
     pcm = PCM()
-    pcm.run_alos_to_rslc(args.data_link, args.output_bucket, config=config)
+    for link in args.data_links:
+        pcm.run_alos_to_rslc(link, args.output_bucket, config=config)
     
     pcm.wait_for_completion()
     

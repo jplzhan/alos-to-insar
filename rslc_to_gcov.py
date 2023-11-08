@@ -11,8 +11,9 @@ def main() -> int:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
-        'data_link',
+        'data_links',
         type=str,
+        nargs='+',
         help='S3 URL to the L0B data to convert to RSLC data.'
     )
     parser.add_argument(
@@ -60,7 +61,8 @@ def main() -> int:
     with open(args.config, 'r', encoding='utf-8') as f:
         config = f.read()
     pcm = PCM()
-    pcm.run_rslc_to_gcov(args.data_link, args.dem, args.output_bucket, config=config)
+    for link in args.data_links:
+        pcm.run_rslc_to_gcov(link, args.dem, args.output_bucket, config=config)
     
     pcm.wait_for_completion()
     

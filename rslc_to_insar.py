@@ -11,14 +11,15 @@ def main() -> int:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
-        'rslc_1',
+        'rslc',
         type=str,
-        help='S3 URL to the first RSLC to be processed.'
+        help='S3 URLs to the first RSLCs to be processed.'
     )
     parser.add_argument(
-        'rslc_2',
+        'rslc_n',
         type=str,
-        help='S3 URL to the second RSLC to be processed.'
+        nargs='+',
+        help=argparse.SUPPRESS
     )
     parser.add_argument(
         '-o'
@@ -65,7 +66,10 @@ def main() -> int:
     with open(args.config, 'r', encoding='utf-8') as f:
         config = f.read()
     pcm = PCM()
-    pcm.run_rslc_to_insar(args.rslc_1, args.rslc_2, args.dem, args.output_bucket, config=config)
+    for i in range(len(args.rslc_n)):
+        prev_rslc = args.rslc if i == 0 else args.rslc_n[i - 1]
+        for next_rslc in args.rslc_n[i:]:
+            pcm.run_rslc_to_insar(prev_rslc, next_rslc, args.dem, args.output_bucket, config=config)
     
     pcm.wait_for_completion()
     
