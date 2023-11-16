@@ -21,7 +21,7 @@ import otello
 # Default settings
 DEFAULT_BUCKET = 's3://nisar-st-data-ondemand/ALOS-1-data'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v1.4.3'
+DEFAULT_VERSION = 'v1.4.4'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 
