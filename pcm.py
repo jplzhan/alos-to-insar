@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 from botocore import UNSIGNED
 from botocore.config import Config
 from botocore.exceptions import ClientError
+from datetime import datetime, timezone, timedelta
 
 import otello
 
@@ -59,10 +60,30 @@ class PCM:
         }
         
         # Get AWS credentials - will be removed later so that stage out is automatic
+        aws_config_fname = f'{os.environ["HOME"]}/.aws/credentials'
         aws_config = configparser.ConfigParser()
-        aws_config.read(f'{os.environ["HOME"]}/.aws/credentials')
+        aws_config.read(aws_config_fname)
         self.aws_cred = aws_config[profile]
         
+        # Get the expiriation date on the config
+        with open(aws_config_fname, 'r', encoding='utf-8') as f:
+            found_profile = False
+            expire_header = '#expiration date = '
+            for line in f:
+                if line.strip() == f'[{profile}]':
+                    found_profile = True
+                if found_profile and line.startswith(expire_header):
+                    # Example: #expiration date = 2023-11-15 18:58:57-08:00
+                    expire_time = datetime.strptime(line[len(expire_header):].strip(), '%Y-%m-%d %H:%M:%S%z')
+                    expire_diff = datetime.now(expire_time.tzinfo) - expire_time
+                    if expire_diff > timedelta(0):
+                        logger.error(f'AWS credentials for profile [{profile}] expired {expire_diff} ago, job will not finish correctly!')
+                        raise RuntimeError(f'Please re-run aws-login to refresh [{profile}] credentials before proceeding!')
+                    else:
+                        expire_diff = expire_time - datetime.now(expire_time.tzinfo)
+                        logger.info(f'AWS credentials for profile [{profile}] will expire at {expire_time} (in {expire_diff}).')
+            if not found_profile:
+                logger.warning(f'Could not parse expiration date for AWS credentials for profile [{profile}].')
         
     def build_pcm(self, tick_rate:float = DEFAULT_BUILD_TICK_SECONDS, rebuild: bool=False):
         """Initialization method for building the PCM job.
