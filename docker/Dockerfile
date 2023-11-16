@@ -70,7 +70,7 @@ ENV PYTHONPATH="${NOTEBOOK_PGE_DIR}:${ISCE3_BUILD_DIR}/packages:${PYTHONPATH}"
 ENV LD_LIBRARY_PATH="${ISCE3_BUILD_DIR}/lib64:${LD_LIBRARY_PATH}"
 
 # Fix permissions isues with loading up the bash profile and home profile
-RUN chmod 775 /home/jovyan/.bash_profile
-RUN chmod 775 /home/jovyan
+RUN chmod 777 /home/jovyan/.bash_profile
+RUN chmod 777 /home/jovyan
 
 CMD ["/bin/bash", "--login"]
