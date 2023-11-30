@@ -253,7 +253,7 @@ class PCM:
             'gpu_enabled': '1' if gpu_enabled else '0',
             's3_upload': '1',
             's3_url': output_bucket,
-            'gslc_config': str(config),
+            'gcov_config': str(config),
             'region': self.aws_cred['region'],
             'key': self.aws_cred['aws_access_key_id'],
             'secret': self.aws_cred['aws_secret_access_key'],
