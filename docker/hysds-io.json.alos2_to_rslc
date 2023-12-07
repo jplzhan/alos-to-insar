@@ -1,0 +1,63 @@
+{
+  "submission_type": "iteration",
+  "params": [
+    {
+      "name": "data_link",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "s3://nisar-st-data-ondemand/alex/ALOS2_zip/0000511819_001001_ALOS2482920840-230503.zip"
+    },
+    {
+      "name": "gpu_enabled",
+      "from": "submitter",
+      "type": "text",
+      "description": "boolean",
+      "default": "1"
+    },
+    {
+      "name": "s3_upload",
+      "from": "submitter",
+      "type": "text",
+      "description": "boolean",
+      "default": "1"
+    },
+    {
+      "name": "s3_url",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "s3://nisar-st-data-ondemand/ALOS-1-data/RSLC"
+    },
+    {
+      "name": "key",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "secret",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "token",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "region",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    }
+  ],
+  "component": "tosca",
+  "label": "ALOS to RSLC PGE"
+}
