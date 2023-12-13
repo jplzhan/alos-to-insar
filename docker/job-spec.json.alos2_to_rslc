@@ -22,27 +22,7 @@
       "destination": "context"
     },
     {
-      "name": "s3_upload",
-      "destination": "context"
-    },
-    {
-      "name": "s3_url",
-      "destination": "context"
-    },
-    {
-      "name": "key",
-      "destination": "context"
-    },
-    {
-      "name": "secret",
-      "destination": "context"
-    },
-    {
-      "name": "token",
-      "destination": "context"
-    },
-    {
-      "name": "region",
+      "name": "timestamp",
       "destination": "context"
     }
   ]

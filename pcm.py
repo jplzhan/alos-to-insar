@@ -18,13 +18,17 @@ from datetime import datetime, timezone, timedelta
 
 import otello
 
+import notebook_pges.isce3_regex as isce3_regex
+
 
 # Default settings
 DEFAULT_BUCKET = 's3://nisar-st-data-ondemand/ALOS-1-data'
+DEFAULT_PCM_STORAGE = 's3://nisar-st-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v1.4.6'
+DEFAULT_VERSION = 'v1.5.2'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
+DEFAULT_POLARIZATION = 'HH'
 
 
 # The directory this script is being ran in
@@ -53,6 +57,7 @@ class PCM:
         self.job_types = self.mozart.get_job_types()
         self.jobs = {
             'alos_to_rslc': None,
+            'alos2_to_rslc': None,
             'l0b_to_rslc': None,
             'rslc_to_gslc': None,
             'rslc_to_gcov': None,
@@ -136,6 +141,11 @@ class PCM:
         logger.info(f'Now waiting for completion of {len(self.job_set)} jobs...')
         self.job_set.wait_for_completion()
     
+    def get_str_time(self) -> str:
+        """Returns the current timestamp in the format used for PCM stage-out and folder format."""
+        now = datetime.now()
+        return now.strftime('%Y%m%dT%H%M%S'), now.strftime('%Y/%m/%d')
+    
     def run_alos_to_rslc(self,
                         data_link: str,
                         output_bucket: str, 
@@ -151,19 +161,43 @@ class PCM:
             - config: YAML formatted string containing the config to pass to focus.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
         """
+        ts, folder = self.get_str_time()
         jt = self.get_job('alos_to_rslc')
         jt.set_input_params({
             'data_link': data_link,
             'gpu_enabled': '1' if gpu_enabled else '0',
-            's3_upload': '1',
-            's3_url': output_bucket,
             'focus_config': str(config),
-            'region': self.aws_cred['region'],
-            'key': self.aws_cred['aws_access_key_id'],
-            'secret': self.aws_cred['aws_secret_access_key'],
-            'token': self.aws_cred['aws_session_token'],
+            'timestamp': ts,
         })
-        logger.info(f'Submitting ALOS to RSLC conversion job for {data_link}...')
+        ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
+        logger.info(f'Submitting ALOS to RSLC conversion job for {data_link}... (storage: {ret})')
+        self.job_set.append(jt.submit_job(queue=queue))
+        
+    def run_alos2_to_rslc(self,
+                        data_link: str,
+                        output_bucket: str, 
+                        gpu_enabled: bool=True,
+                        config: str='',
+                        queue: str='nisar-job_worker-sciflo-rslc'):
+        """Runs ALOS to RSLC.
+        
+        Input Parameters:
+            - data_link: S3 URL to the ALOS-2 data to be processed into NISAR RSLC.
+            - output_bucket: S3 bucket location to upload the RLSC result to.
+            - gpu_enabled: Whether to run focus.py using the GPU.
+            - config: YAML formatted string containing the config to pass to focus.py.
+            - queue: Name of the PCM queue to submit the job to (recommended is default).
+        """
+        ts, folder = self.get_str_time()
+        jt = self.get_job('alos2_to_rslc')
+        jt.set_input_params({
+            'data_link': data_link,
+            'gpu_enabled': '1' if gpu_enabled else '0',
+            'focus_config': str(config),
+            'timestamp': ts,
+        })
+        ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
+        logger.info(f'Submitting ALOS to RSLC conversion job for {data_link}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
 
     def run_l0b_to_rslc(self,
@@ -181,19 +215,16 @@ class PCM:
             - config: YAML formatted string containing the config to pass to focus.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
         """
+        ts, folder = self.get_str_time()
         jt = self.get_job('l0b_to_rslc')
         jt.set_input_params({
             'data_link': data_link,
             'gpu_enabled': '1' if gpu_enabled else '0',
-            's3_upload': '1',
-            's3_url': output_bucket,
             'focus_config': str(config),
-            'region': self.aws_cred['region'],
-            'key': self.aws_cred['aws_access_key_id'],
-            'secret': self.aws_cred['aws_secret_access_key'],
-            'token': self.aws_cred['aws_session_token'],
+            'timestamp': ts,
         })
-        logger.info(f'Submitting L0B to RSLC conversion job for {data_link}...')
+        ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
+        logger.info(f'Submitting L0B to RSLC conversion job for {data_link}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
 
     def run_rslc_to_gslc(self,
@@ -213,20 +244,17 @@ class PCM:
             - config: YAML formatted string containing the config to pass to focus.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
         """
+        ts, folder = self.get_str_time()
         jt = self.get_job('rslc_to_gslc')
         jt.set_input_params({
             'data_link': data_link,
             'dem_s3_url': dem,
             'gpu_enabled': '1' if gpu_enabled else '0',
-            's3_upload': '1',
-            's3_url': output_bucket,
             'gslc_config': str(config),
-            'region': self.aws_cred['region'],
-            'key': self.aws_cred['aws_access_key_id'],
-            'secret': self.aws_cred['aws_secret_access_key'],
-            'token': self.aws_cred['aws_session_token'],
+            'timestamp': ts,
         })
-        logger.info(f'Submitting RSLC to GSLC conversion job for {data_link}...')
+        ret = f'{DEFAULT_PCM_STORAGE}/L2_L_GSLC/{folder}/{ret}'
+        logger.info(f'Submitting RSLC to GSLC conversion job for {data_link}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
     
     def run_rslc_to_gcov(self,
@@ -246,20 +274,17 @@ class PCM:
             - config: YAML formatted string containing the config to pass to focus.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
         """
+        ts, folder = self.get_str_time()
         jt = self.get_job('rslc_to_gcov')
         jt.set_input_params({
             'data_link': data_link,
             'dem_s3_url': dem,
             'gpu_enabled': '1' if gpu_enabled else '0',
-            's3_upload': '1',
-            's3_url': output_bucket,
             'gcov_config': str(config),
-            'region': self.aws_cred['region'],
-            'key': self.aws_cred['aws_access_key_id'],
-            'secret': self.aws_cred['aws_secret_access_key'],
-            'token': self.aws_cred['aws_session_token'],
+            'timestamp': ts,
         })
-        logger.info(f'Submitting RSLC to GCOV conversion job for {data_link}...')
+        ret = f'{DEFAULT_PCM_STORAGE}/L2_L_GCOV/{folder}/{ret}'
+        logger.info(f'Submitting RSLC to GCOV conversion job for {data_link}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
 
     def run_rslc_to_insar(self,
@@ -269,7 +294,7 @@ class PCM:
                           output_bucket: str,
                           gpu_enabled: bool=True,
                           config: str='',
-                          queue: str='nisar-job_worker-sciflo-insar'):
+                          queue: str='nisar-job_worker-sciflo-insar') -> str:
         """Runs RSLC to INSAR.
         
         Input Parameters:
@@ -281,22 +306,23 @@ class PCM:
             - config: YAML formatted string containing the config to pass to insar.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
         """
+        ts, folder = self.get_str_time()
         jt = self.get_job('rslc_to_insar')
         jt.set_input_params({
             'rslc_1': rslc_1,
             'rslc_2': rslc_2,
             'dem_s3_url': dem,
             'gpu_enabled': '1' if gpu_enabled else '0',
-            's3_upload': '1',
-            's3_url': output_bucket,
             'insar_config': str(config),
-            'region': self.aws_cred['region'],
-            'key': self.aws_cred['aws_access_key_id'],
-            'secret': self.aws_cred['aws_secret_access_key'],
-            'token': self.aws_cred['aws_session_token'],
+            'timestamp': ts,
         })
-        logger.info(f'Submitting INSAR conversion job for {rslc_1} and {rslc_2}...')
+        ret = isce3_regex.GUNW_FORMAT.format(
+            polarization=DEFAULT_POLARIZATION,
+            timestamp=ts)
+        ret = f'{DEFAULT_PCM_STORAGE}/L2_L_GUNW/{folder}/{ret}'
+        logger.info(f'Submitting INSAR conversion job for {rslc_1} and {rslc_2}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
+        return ret
         
     def get_job(self, job_name: str):
         """Gets the listed job type from Mozart and initializes it."""

@@ -30,20 +30,6 @@
       "default": "1"
     },
     {
-      "name": "s3_upload",
-      "from": "submitter",
-      "type": "text",
-      "description": "boolean",
-      "default": "1"
-    },
-    {
-      "name": "s3_url",
-      "from": "submitter",
-      "type": "text",
-      "description": "string",
-      "default": "s3://nisar-adt-cc-ondemand/ALOS-1-data/GUNW"
-    },
-    {
       "name": "insar_config",
       "from": "submitter",
       "type": "text",
@@ -51,32 +37,11 @@
       "default": ""
     },
     {
-      "name": "key",
+      "name": "timestamp",
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": ""
-    },
-    {
-      "name": "secret",
-      "from": "submitter",
-      "type": "text",
-      "description": "string",
-      "default": ""
-    },
-    {
-      "name": "token",
-      "from": "submitter",
-      "type": "text",
-      "description": "string",
-      "default": ""
-    },
-    {
-      "name": "region",
-      "from": "submitter",
-      "type": "text",
-      "description": "string",
-      "default": ""
+      "default": "20240131T0123456"
     }
   ],
   "component": "tosca",
