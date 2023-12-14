@@ -14,12 +14,12 @@ def main() -> int:
     parser.add_argument(
         'rslc',
         type=str,
-        help='S3 URLs to the first RSLCs to be processed.'
+        help='S3 URLs to the RSLCs to be processed. If only 1 input is provided, then the input should be a .csv file containing the pairs to be processed on each line.'
     )
     parser.add_argument(
         'rslc_n',
         type=str,
-        nargs='+',
+        nargs='*',
         help=argparse.SUPPRESS
     )
     parser.add_argument(
@@ -68,10 +68,17 @@ def main() -> int:
         config = f.read()
     outdir_list = []
     pcm = PCM()
-    for i in range(len(args.rslc_n)):
-        prev_rslc = args.rslc if i == 0 else args.rslc_n[i - 1]
-        for next_rslc in args.rslc_n[i:]:
-            outdir_list.append([prev_rslc, next_rslc, pcm.run_rslc_to_insar(prev_rslc, next_rslc, args.dem, args.output_bucket, config=config)])
+    
+    if len(args.rslc_n) > 0:
+        for i in range(len(args.rslc_n)):
+            prev_rslc = args.rslc if i == 0 else args.rslc_n[i - 1]
+            for next_rslc in args.rslc_n[i:]:
+                outdir_list.append([prev_rslc, next_rslc, pcm.run_rslc_to_insar(prev_rslc, next_rslc, args.dem, args.output_bucket, config=config)])
+    else:
+        with open(args.rslc, 'r', encoding='utf-8') as f:
+            for line in f:
+                urls = line.split(',')
+                outdir_list.append([urls[0], urls[1], pcm.run_rslc_to_insar(urls[0], urls[1], args.dem, args.output_bucket, config=config)])
     
     pcm.wait_for_completion()
     
