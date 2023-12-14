@@ -93,7 +93,7 @@ class PCM:
         except Exception as e:
             logger.debug(f'Exception caught while checking build status: {e}')
             logger.debug(f'Exceptions are thrown when the CI job was never built (other errors notwithstanding).')
-            logger.info('Now submitting a build for \'{self.repo}:{self.version}\' (estimated build time: ~45 minutes)...')
+            logger.info(f'Now submitting a build for \'{self.repo}:{self.version}\' (estimated build time: ~45 minutes)...')
             status = self.ci.submit_build()
             time.sleep(10)
 
