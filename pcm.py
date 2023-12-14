@@ -116,8 +116,11 @@ class PCM:
         self.job_set.wait_for_completion()
     
     def get_str_time(self) -> str:
-        """Returns the current timestamp in the format used for PCM stage-out and folder format."""
-        now = datetime.now()
+        """Returns the current timestamp in the format used for PCM stage-out and folder format.
+        
+        The number of jobs is added in seconds to ensure that no two jobs will have the same timestamp.
+        """
+        now = datetime.now() + timedelta(0, self.num_jobs)
         return now.strftime('%Y%m%dT%H%M%S'), now.strftime('%Y/%m/%d')
     
     def run_alos_to_rslc(self,
@@ -125,7 +128,7 @@ class PCM:
                         output_bucket: str, 
                         gpu_enabled: bool=True,
                         config: str='',
-                        queue: str='nisar-job_worker-sciflo-rslc'):
+                        queue: str='nisar-job_worker-sciflo-rslc') -> str:
         """Runs ALOS to RSLC.
         
         Input Parameters:
@@ -149,13 +152,15 @@ class PCM:
         ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
         logger.info(f'Submitting ALOS to RSLC conversion job for {data_link}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
+        self.num_jobs += 1
+        return ret
         
     def run_alos2_to_rslc(self,
                         data_link: str,
                         output_bucket: str, 
                         gpu_enabled: bool=True,
                         config: str='',
-                        queue: str='nisar-job_worker-sciflo-rslc'):
+                        queue: str='nisar-job_worker-sciflo-rslc') -> str:
         """Runs ALOS to RSLC.
         
         Input Parameters:
@@ -179,13 +184,15 @@ class PCM:
         ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
         logger.info(f'Submitting ALOS to RSLC conversion job for {data_link}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
+        self.num_jobs += 1
+        return ret
 
     def run_l0b_to_rslc(self,
                         data_link: str,
                         output_bucket: str, 
                         gpu_enabled: bool=True,
                         config: str='',
-                        queue: str='nisar-job_worker-sciflo-rslc'):
+                        queue: str='nisar-job_worker-sciflo-rslc') -> str:
         """Runs L0B to RSLC.
         
         Input Parameters:
@@ -209,6 +216,8 @@ class PCM:
         ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
         logger.info(f'Submitting L0B to RSLC conversion job for {data_link}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
+        self.num_jobs += 1
+        return ret
 
     def run_rslc_to_gslc(self,
                         data_link: str,
@@ -216,7 +225,7 @@ class PCM:
                         output_bucket: str, 
                         gpu_enabled: bool=True,
                         config: str='',
-                        queue: str='nisar-job_worker-sciflo-rslc'):
+                        queue: str='nisar-job_worker-sciflo-rslc') -> str:
         """Runs RSLC to GSLC.
         
         Input Parameters:
@@ -242,6 +251,8 @@ class PCM:
         ret = f'{DEFAULT_PCM_STORAGE}/L2_L_GSLC/{folder}/{ret}'
         logger.info(f'Submitting RSLC to GSLC conversion job for {data_link}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
+        self.num_jobs += 1
+        return ret
     
     def run_rslc_to_gcov(self,
                         data_link: str,
@@ -249,7 +260,7 @@ class PCM:
                         output_bucket: str, 
                         gpu_enabled: bool=True,
                         config: str='',
-                        queue: str='nisar-job_worker-sciflo-rslc'):
+                        queue: str='nisar-job_worker-sciflo-rslc') -> str:
         """Runs RSLC to GCOV.
         
         Input Parameters:
@@ -275,6 +286,8 @@ class PCM:
         ret = f'{DEFAULT_PCM_STORAGE}/L2_L_GCOV/{folder}/{ret}'
         logger.info(f'Submitting RSLC to GCOV conversion job for {data_link}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
+        self.num_jobs += 1
+        return ret
 
     def run_rslc_to_insar(self,
                           rslc_1: str,
@@ -311,6 +324,7 @@ class PCM:
         ret = f'{DEFAULT_PCM_STORAGE}/L2_L_GUNW/{folder}/{ret}'
         logger.info(f'Submitting INSAR conversion job for {rslc_1} and {rslc_2}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
+        self.num_jobs += 1
         return ret
         
     def get_job(self, job_name: str):
