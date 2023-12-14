@@ -25,7 +25,7 @@ import notebook_pges.isce3_regex as isce3_regex
 DEFAULT_BUCKET = 's3://nisar-st-data-ondemand/ALOS-1-data'
 DEFAULT_PCM_STORAGE = 's3://nisar-st-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v1.5.2'
+DEFAULT_VERSION = 'v1.5.3'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -159,9 +159,8 @@ class PCM:
                         data_link: str,
                         output_bucket: str, 
                         gpu_enabled: bool=True,
-                        config: str='',
                         queue: str='nisar-job_worker-sciflo-rslc') -> str:
-        """Runs ALOS to RSLC.
+        """Runs ALOS-2 to RSLC.
         
         Input Parameters:
             - data_link: S3 URL to the ALOS-2 data to be processed into NISAR RSLC.
@@ -175,14 +174,13 @@ class PCM:
         jt.set_input_params({
             'data_link': data_link,
             'gpu_enabled': '1' if gpu_enabled else '0',
-            'focus_config': str(config),
             'timestamp': ts,
         })
         ret = isce3_regex.RSLC_FORMAT.format(
             polarization=DEFAULT_POLARIZATION,
             timestamp=ts)
         ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
-        logger.info(f'Submitting ALOS to RSLC conversion job for {data_link}... (storage: {ret})')
+        logger.info(f'Submitting ALOS-2 to RSLC conversion job for {data_link}... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
         self.num_jobs += 1
         return ret

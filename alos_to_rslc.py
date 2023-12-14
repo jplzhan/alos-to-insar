@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 
 from pcm import PCM, DEFAULT_BUCKET, SCRIPT_DIR, logger
 
@@ -57,14 +58,22 @@ def main() -> int:
     
     if args.output_bucket is None:
         logger.warning(f'No output bucket specified, using default: {args.output_bucket}')
+    elif args.output_bucket[-1] == '/':
+        args.output_bucket = args.output_bucket[:-1]
     
     with open(args.config, 'r', encoding='utf-8') as f:
         config = f.read()
+    outdir_list = []
     pcm = PCM()
     for link in args.data_links:
-        pcm.run_alos_to_rslc(link, args.output_bucket, config=config)
+        outdir_list.append([link, pcm.run_alos_to_rslc(link, args.output_bucket, config=config)])
     
     pcm.wait_for_completion()
+    
+    # Copy results to the specified output bucket
+    for link, outdir in outdir_list:
+        logger.info(f'Copying results for {link} -> {outdir} -> {args.output_bucket}')
+        subprocess.run(f'aws s3 cp --recursive {outdir}/ {args.output_bucket}/ --exclude "*" --include "*.h5"', shell=True, check=True)
     
     return 0
 

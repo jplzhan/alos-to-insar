@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 
 from pcm import PCM, DEFAULT_BUCKET, SCRIPT_DIR, logger
 
@@ -65,13 +66,19 @@ def main() -> int:
     
     with open(args.config, 'r', encoding='utf-8') as f:
         config = f.read()
+    outdir_list = []
     pcm = PCM()
     for i in range(len(args.rslc_n)):
         prev_rslc = args.rslc if i == 0 else args.rslc_n[i - 1]
         for next_rslc in args.rslc_n[i:]:
-            pcm.run_rslc_to_insar(prev_rslc, next_rslc, args.dem, args.output_bucket, config=config)
+            outdir_list.append([prev_rslc, next_rslc, pcm.run_rslc_to_insar(prev_rslc, next_rslc, args.dem, args.output_bucket, config=config)])
     
     pcm.wait_for_completion()
+    
+    # Copy results to the specified output bucket
+    for link_1, link_2, outdir in outdir_list:
+        logger.info(f'Copying results for {link_1} and {link_2} -> {outdir} -> {args.output_bucket}')
+        subprocess.run(f'aws s3 cp --recursive {outdir}/ {args.output_bucket}/ --exclude "*" --include "*.h5"', shell=True, check=True)
     
     return 0
 

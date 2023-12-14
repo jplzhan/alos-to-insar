@@ -193,5 +193,5 @@ runconfig:
 
         # OPTIONAL - Location to save logs, use runconfig*_yaml.log if not specified
         logging:
-            path: output_insar/insar.log
+            path: insar_log.txt
             write_mode: 'w'
