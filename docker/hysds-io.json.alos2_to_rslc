@@ -24,5 +24,5 @@
     }
   ],
   "component": "tosca",
-  "label": "ALOS to RSLC PGE"
+  "label": "ALOS-2 to RSLC PGE"
 }

@@ -1,5 +1,5 @@
 {
-  "command": "notebook-pge-wrapper execute /home/jovyan/alos-to-insar/notebook_pges/alos_to_rslc.ipynb",
+  "command": "notebook-pge-wrapper execute /home/jovyan/alos-to-insar/notebook_pges/alos2_to_rslc.ipynb",
   "time_limit": 86400,
   "soft_time_limit": 86400,
   "disk_usage": "10GB",
