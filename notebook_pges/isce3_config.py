@@ -82,7 +82,7 @@ def download_alos2_s3_data(url: str, dl_dir: str, dest_dir: str) -> str:
             raise ValueError(f'Failed to extract {extract_dir}!')
         return extract_dir
     except Exception as e:
-        print(f'Exception caught while downloading ALOS-1 Data from S3: {e}')
+        print(f'Exception caught while downloading ALOS-2 Data from S3: {e}')
 
 def download_dem(url: str, dl_dir: str) -> str:
     """Downloads a DEM TIFF file given by an S3 url to the specified directory."""

@@ -43,17 +43,11 @@ def main() -> int:
     #     logger.warning(f'No DEM file was specified.')
     #     args.dem = ''
     
-    if args.config is None:
-        args.config = os.path.join(SCRIPT_DIR, 'templates', 'focus.yaml')
-        logger.warning(f'No run config was specified, using default: {args.config}')
-    
     if args.output_bucket is None:
         logger.warning(f'No output bucket specified, using default: {args.output_bucket}')
     elif args.output_bucket[-1] == '/':
         args.output_bucket = args.output_bucket[:-1]
     
-    with open(args.config, 'r', encoding='utf-8') as f:
-        config = f.read()
     outdir_list = []
     pcm = PCM()
     for link in args.data_links:
