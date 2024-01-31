@@ -22,13 +22,14 @@ import notebook_pges.isce3_regex as isce3_regex
 
 
 # Default settings
-DEFAULT_BUCKET = 's3://nisar-st-data-ondemand/ALOS-1-data'
-DEFAULT_PCM_STORAGE = 's3://nisar-st-rs-ondemand/products'
+DEFAULT_BUCKET = 's3://nisar-adt/ALOS-1-data'
+DEFAULT_PCM_STORAGE = 's3://nisar-adt-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v1.6.0'
+DEFAULT_VERSION = 'v1.6.1'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
+NON_INSAR_POLARIZATION = f'{DEFAULT_POLARIZATION}00'
 
 
 # The directory this script is being ran in
@@ -147,7 +148,7 @@ class PCM:
             'timestamp': ts,
         })
         ret = isce3_regex.RSLC_FORMAT.format(
-            polarization=DEFAULT_POLARIZATION,
+            polarization=NON_INSAR_POLARIZATION,
             timestamp=ts)
         ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
         logger.info(f'Submitting ALOS to RSLC conversion job for {data_link}... (storage: {ret})')
@@ -177,7 +178,7 @@ class PCM:
             'timestamp': ts,
         })
         ret = isce3_regex.RSLC_FORMAT.format(
-            polarization=DEFAULT_POLARIZATION,
+            polarization=NON_INSAR_POLARIZATION,
             timestamp=ts)
         ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
         logger.info(f'Submitting ALOS-2 to RSLC conversion job for {data_link}... (storage: {ret})')
@@ -209,7 +210,7 @@ class PCM:
             'timestamp': ts,
         })
         ret = isce3_regex.RSLC_FORMAT.format(
-            polarization=DEFAULT_POLARIZATION,
+            polarization=NON_INSAR_POLARIZATION,
             timestamp=ts)
         ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
         logger.info(f'Submitting L0B to RSLC conversion job for {data_link}... (storage: {ret})')
@@ -244,7 +245,7 @@ class PCM:
             'timestamp': ts,
         })
         ret = isce3_regex.GSLC_FORMAT.format(
-            polarization=DEFAULT_POLARIZATION,
+            polarization=NON_INSAR_POLARIZATION,
             timestamp=ts)
         ret = f'{DEFAULT_PCM_STORAGE}/L2_L_GSLC/{folder}/{ret}'
         logger.info(f'Submitting RSLC to GSLC conversion job for {data_link}... (storage: {ret})')
@@ -279,7 +280,7 @@ class PCM:
             'timestamp': ts,
         })
         ret = isce3_regex.GCOV_FORMAT.format(
-            polarization=DEFAULT_POLARIZATION,
+            polarization=NON_INSAR_POLARIZATION,
             timestamp=ts)
         ret = f'{DEFAULT_PCM_STORAGE}/L2_L_GCOV/{folder}/{ret}'
         logger.info(f'Submitting RSLC to GCOV conversion job for {data_link}... (storage: {ret})')
