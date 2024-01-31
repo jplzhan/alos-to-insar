@@ -73,11 +73,19 @@ def main() -> int:
         for i in range(len(args.rslc_n)):
             prev_rslc = args.rslc if i == 0 else args.rslc_n[i - 1]
             for next_rslc in args.rslc_n[i:]:
+                # Sanity checker
+                if prev_rslc == next_rslc:
+                    logger.error(f'WARNING: Detected pair using "{prev_rslc}" as both the reference and secondary RSLC, which will not generate a useful product. Aborting submission script...\n')
+                    return 1
                 outdir_list.append([prev_rslc, next_rslc, pcm.run_rslc_to_insar(prev_rslc, next_rslc, args.dem, args.output_bucket, config=config)])
     else:
         with open(args.rslc, 'r', encoding='utf-8') as f:
             for line in f:
                 urls = line.split(',')
+                # Sanity checker
+                if urls[0] == urls[1]:
+                    logger.error(f'WARNING: Detected pair using {urls[0]} as both the reference and secondary RSLC, which will not generate a useful product. Aborting submission script..\n')
+                    return 1
                 outdir_list.append([urls[0], urls[1], pcm.run_rslc_to_insar(urls[0], urls[1], args.dem, args.output_bucket, config=config)])
     
     pcm.wait_for_completion()
