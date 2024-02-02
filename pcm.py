@@ -295,7 +295,7 @@ class PCM:
                           output_bucket: str,
                           gpu_enabled: bool=True,
                           config: str='',
-                          queue: str='nisar-job_worker-sciflo-insar') -> str:
+                          queue: str='nisar-job_worker-sciflo-insar-gpu') -> str:
         """Runs RSLC to INSAR.
         
         Input Parameters:
