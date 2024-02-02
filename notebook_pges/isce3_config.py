@@ -131,7 +131,12 @@ def write_insar_config(template: dict, f1: str, f2: str, dem: str, yml_path: str
     template['runconfig']['groups']['input_file_group']['secondary_rslc_file'] = f2
     template['runconfig']['groups']['dynamic_ancillary_file_group']['dem_file'] = dem
     template['runconfig']['groups']['product_path_group']['sas_output_file'] = outfile
+    template['runconfig']['groups']['product_path_group']['scratch_path'] = 'scratch'
     template['runconfig']['groups']['product_path_group']['product_path'] = os.path.dirname(outfile)
+    template['runconfig']['groups']['logging'] = {
+        'path': 'insar.log',
+        'write_mode': 'w',
+    }
 
     # product_types = ['rifg', 'runw', 'gunw', 'roff', 'goff']
     # for p_type in product_types:
