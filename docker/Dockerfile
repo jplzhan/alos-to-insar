@@ -24,7 +24,7 @@ RUN set -ex \
     && bash miniconda.sh -b -p /opt/conda \
     && rm miniconda.sh \
     && touch /opt/conda/conda-meta/pinned \
-    && mamba update -c conda-forge conda \
+    && mamba install -c conda-forge conda=23.10 \
     && mamba install -y git \
     && mamba config --set show_channel_urls True \
     && mamba init bash
