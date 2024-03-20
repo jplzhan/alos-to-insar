@@ -25,7 +25,7 @@ import notebook_pges.isce3_regex as isce3_regex
 DEFAULT_BUCKET = 's3://nisar-adt/ALOS-1-data'
 DEFAULT_PCM_STORAGE = 's3://nisar-adt-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v1.6.1'
+DEFAULT_VERSION = 'v1.7.0'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
