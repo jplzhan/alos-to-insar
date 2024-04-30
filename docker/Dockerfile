@@ -62,7 +62,7 @@ RUN set -ex \
 
 RUN set -ex \
     && cd $HOME/isce3/build \
-    && git checkout v0.20.0 \
+    && git checkout 2d6ea864e2c9f9e766aab0c0823f3bf49aae08b6 \
     && cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
     && make -j 4 install
 
