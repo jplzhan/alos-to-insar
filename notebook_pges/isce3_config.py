@@ -5,6 +5,9 @@ import asf_search as asf
 import boto3
 import aws_uploader
 import zipfile
+import json
+import h5py
+import shutil
 
 from urllib.parse import urlparse
 
@@ -162,3 +165,205 @@ def prepend_env_var(env_var: str, val: str) -> str:
         if os.environ[env_var].endswith(':'):
             os.environ[env_var] = os.environ[env_var][:-1]
         return os.environ[env_var]
+
+    
+#!/usr/bin/env python
+# coding: utf-8
+
+# Copyright 2024, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government sponsorship acknowledged. Any commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
+# 
+# This software may be subject to U.S. export control laws and regulations. By accepting this document, the user agrees to comply with all applicable U.S. export laws and regulations. User has the responsibility to obtain export licenses, or other export authority as may be required, before exporting such information to foreign countries or providing access to foreign persons.
+
+# # Rename .h5 products to NISAR format based off of contents in .h5
+# This script renames .h5 product file to support ingest into the PCM/DAAC systems. It extracts out contents from the .h5 to populate fields in the filename along with static fields hardcoded as needed to support basic ingest
+
+
+class h5parse:
+    """Parses the h5py fields to help determine an inferred NISAR name."""
+    @staticmethod
+    def filename_parse(input_file):
+        """Get filename function."""
+        # Get the filename from the file path
+        filename_only = os.path.basename(input_file)
+
+        # Parse the filename using "_" as a delimiter and store each field into a list
+        filename_parts = filename_only.split('_')
+
+        # Print the list of fields
+        print(filename_parts)
+        return(filename_parts)
+
+    # Function to search .h5 object for specified object name and return value
+    def search_object(h5_obj, target_object):
+        """
+        Recursively search for a specific object in an HDF5 object and print its value if found.
+
+        Parameters:
+        - h5_obj: HDF5 group or dataset
+        - target_object: Name of the object to search for
+        """
+
+        if isinstance(h5_obj, h5py.Group):
+            # Iterate over the keys (group and dataset names) in the group
+            for key in h5_obj.keys():
+                # Recursively call h5parse.search_object on each subgroup or dataset
+                result = h5parse.search_object(h5_obj[key], target_object)
+                if result is not None:
+                    return result
+        elif isinstance(h5_obj, h5py.Dataset):
+            # Check if the dataset name matches the target object
+            if h5_obj.name.endswith(target_object):
+
+                # Print the dataset value
+                print(f"Value of '{target_object}': {h5_obj[()]}")
+                print("h5_obj datatype: ")
+                print(h5_obj[()].dtype)
+                if (h5_obj[()].dtype in ("|S29","|S4", "|S26")):
+                    print("BYTES FOUND")
+                    objectByteValue = h5_obj[()]
+                    print(f"Value of objectByteValue: {objectByteValue}")            
+                    objectStrValue = f"{objectByteValue.decode('UTF-8')}"
+                    print(f"Value of objectStrValue: {objectStrValue}")
+                    return objectStrValue
+                else:
+                    objectValue = h5_obj[()]
+                    print(f"Value of objectValue: {objectValue}")
+                    objectStrValue = f"{objectValue}"
+                    return objectStrValue
+    @staticmethod
+    def infer_nisar_name(input_file: str) -> str:
+        """Attempts to determine"""
+        if not os.path.exists(input_file) or not input_file.endswith('.h5'):
+            raise ValueError(f'{input_file} is not an existing .h5 file!')
+
+        with h5py.File(input_file, 'r') as h5_obj:
+            if (h5parse.search_object(
+                    h5_obj, "productType")) in ["RSLC", "GSLC", "GCOV"]:
+                new_filename= ("NISAR_" \
+                    +"L1" \
+                    + "_" + "PR" \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "productType") \
+                    + "_" + "001" \
+                    + "_" + "001" \
+                    + "_" + "A" \
+                    + "_" + "{:03d}".format(h5parse.search_object(
+                        h5_obj, "frameNumber")) \
+                    + "_" + "2000" \
+                    + "_" + "SHNA" \
+                    + "_" + "A" \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "zeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "zeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + "T00888" \
+                    + "_" + "M" \
+                    + "_" + "F" \
+                    + "_" + "J" \
+                    + "_" + "888" \
+                    + ".h5")
+            elif (h5parse.search_object(
+                    h5_obj, "productType")) in ["GSLC", "GCOV"]:
+                new_filename= ("NISAR_" \
+                    +"L2" \
+                    + "_" + "PR" \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "productType") \
+                    + "_" + "001" \
+                    + "_" + "001" \
+                    + "_" + "A" \
+                    + "_" + "{:03d}".format(h5parse.search_object(
+                        h5_obj, "frameNumber")) \
+                    + "_" + "2000" \
+                    + "_" + "SHNA" \
+                    + "_" + "A" \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "zeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "zeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + "T00777" \
+                    + "_" + "M" \
+                    + "_" + "F" \
+                    + "_" + "J" \
+                    + "_" + "777" \
+                    + ".h5")    
+            elif (h5parse.search_object(
+                    h5_obj, "productType")) in ["RIFG", "RUNW", "ROFF"]:
+                new_filename= ("NISAR_" \
+                    +"L1" \
+                    + "_" + "PR" \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "productType") \
+                    + "_" + "001" \
+                    + "_" + "001" \
+                    + "_" + "A" \
+                    + "_" + "{:03d}".format(
+                        h5parse.search_object(h5_obj, "frameNumber")) \
+                    + "_" + "013" \
+                    + "_" + "2000" \
+                    + "_" + "SH" \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "referenceZeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "referenceZeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "secondaryZeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "secondaryZeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + "T00888" \
+                    + "_" + "M" \
+                    + "_" + "F" \
+                    + "_" + "J" \
+                    + "_" + "888" \
+                    + ".h5")
+            elif (h5parse.search_object(h5_obj, "productType")) in ["GUNW", "GOFF"]:
+                new_filename= ("NISAR_" \
+                    +"L2" \
+                    + "_" + "PR" \
+                    + "_" + h5parse.search_object(h5_obj, "productType") \
+                    + "_" + "001" \
+                    + "_" + "001" \
+                    + "_" + "A" \
+                    + "_" + "001" \
+    #                + "_" + "{:03d}".format(h5parse.search_object(h5_obj, "frameNumber")) \
+                    + "_" + "013" \
+                    + "_" + "2000" \
+                    + "_" + "SH" \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "referenceZeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "referenceZeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "secondaryZeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "secondaryZeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + "T00888" \
+                    + "_" + "M" \
+                    + "_" + "F" \
+                    + "_" + "J" \
+                    + "_" + "888" \
+                    + ".h5")
+            elif (h5parse.search_object(h5_obj, "Soil_moisture")) is not None:
+                new_filename= ("NISAR_" \
+                    +"L3" \
+                    + "_" + "PR" \
+                    + "_" + "SME2" \
+                    + "_" + "001" \
+                    + "_" + "001" \
+                    + "_" + "A" \
+                    + "_" + "{:03d}".format(h5parse.search_object(h5_obj, "frameNumber")) \
+                    + "_" + "2000" \
+                    + "_" + "SHNA" \
+                    + "_" + "A" \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "zeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + h5parse.search_object(
+                        h5_obj, "zeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
+                    + "_" + "T00888" \
+                    + "_" + "M" \
+                    + "_" + "F" \
+                    + "_" + "J" \
+                    + "_" + "888" \
+                    + ".h5")
+
+        return new_filename

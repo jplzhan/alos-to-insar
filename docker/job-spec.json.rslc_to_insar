@@ -30,6 +30,10 @@
       "destination": "context"
     },
     {
+      "name": "infer_nisar_fname",
+      "destination": "context"
+    },
+    {
       "name": "insar_config",
       "destination": "context"
     },
