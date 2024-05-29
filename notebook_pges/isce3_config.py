@@ -166,18 +166,6 @@ def prepend_env_var(env_var: str, val: str) -> str:
             os.environ[env_var] = os.environ[env_var][:-1]
         return os.environ[env_var]
 
-    
-#!/usr/bin/env python
-# coding: utf-8
-
-# Copyright 2024, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government sponsorship acknowledged. Any commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
-# 
-# This software may be subject to U.S. export control laws and regulations. By accepting this document, the user agrees to comply with all applicable U.S. export laws and regulations. User has the responsibility to obtain export licenses, or other export authority as may be required, before exporting such information to foreign countries or providing access to foreign persons.
-
-# # Rename .h5 products to NISAR format based off of contents in .h5
-# This script renames .h5 product file to support ingest into the PCM/DAAC systems. It extracts out contents from the .h5 to populate fields in the filename along with static fields hardcoded as needed to support basic ingest
-
-
 class h5parse:
     """Parses the h5py fields to help determine an inferred NISAR name."""
     @staticmethod
