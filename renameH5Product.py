@@ -96,114 +96,123 @@ if __name__ == "__main__":
 
     
     with h5py.File(input_file, 'r') as h5_obj:
-        if (search_object(h5_obj, "productType")) in ["RSLC", "GSLC", "GCOV"]:
+        # Attempt to infer frame number
+        try:
+            param_frame_number = search_object(h5_obj, "frameNumber")
+            # Attempt to convert the string frame number into an int and reformat it back
+            if isinstance(param_frame_number, str):
+                param_frame_number = int(param_frame_number)
+            frame_number = "{:03d}".format(param_frame_number)
+        except Exception as e:
+            print(f"An error occurred while inferring the frame number: {e}")
+            frame_number = "013"
+            print(f"Using hardcoded frame number instead: {frame_number}")
+
+        # Format name based on product type
+        product_type = search_object(h5_obj, "productType")
+        if product_type in ["RSLC", "GSLC", "GCOV"]:
             new_filename= ("NISAR_" \
                 +"L1" \
-                + "_" + "PR" \        # Processing Type
-                + "_" + search_object(h5_obj, "productType") \
-                + "_" + "001" \       # Cycle number hardcoded
-                + "_" + "001" \       # Relative orbit number hardcoded
-                + "_" + "A" \         # direction of movement
-#                + "_" + "{:03d}".format(search_object(h5_obj, "frameNumber")) \
-                + "_" + "013" \       # Framenumber hardcoded
-                + "_" + "2000" \      # MODE hardcoded
-                + "_" + "SHNA" \      # Polarization hardcoded
-                + "_" + "A" \         # Source of data acquire source(A) vs Mixed source (M)
+                + "_" + "PR" \
+                + "_" + product_type \
+                + "_" + "001" \
+                + "_" + "001" \
+                + "_" + "A" \
+                + "_" + frame_number \
+                + "_" + "2000" \
+                + "_" + "SHNA" \
+                + "_" + "A" \
                 + "_" + search_object(h5_obj, "zeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
                 + "_" + search_object(h5_obj, "zeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
-                + "_" + "T00888" \    # CRID hardcoded
-                + "_" + "M" \         # Product accuracy (P, M, N, F)
-                + "_" + "F" \         # Coverage indicator (F, P)
-                + "_" + "J" \         # Location of SDS (J=JPL, N=NRSC)
-                + "_" + "888" \       # Product counter
+                + "_" + "T00888" \
+                + "_" + "M" \
+                + "_" + "F" \
+                + "_" + "J" \
+                + "_" + "888" \
                 + ".h5")
-        elif (search_object(h5_obj, "productType")) in ["GSLC", "GCOV"]:
+        elif product_type in ["GSLC", "GCOV"]:
             new_filename= ("NISAR_" \
                 +"L2" \
-                + "_" + "PR" \        # Processing Type
-                + "_" + search_object(h5_obj, "productType") \
-                + "_" + "001" \       # Cycle number hardcoded
-                + "_" + "001" \       # Relative orbit number hardcoded
-                + "_" + "A" \         # direction of movement
-#                + "_" + "{:03d}".format(search_object(h5_obj, "frameNumber")) \
-                + "_" + "013" \       # Framenumber hardcoded
-                + "_" + "2000" \      # MODE hardcoded
-                + "_" + "SHNA" \      # Polarization hardcoded
-                + "_" + "A" \         # Source of data acquire source(A) vs Mixed source (M)
+                + "_" + "PR" \
+                + "_" + product_type \
+                + "_" + "001" \
+                + "_" + "001" \
+                + "_" + "A" \
+                + "_" + frame_number \
+                + "_" + "2000" \
+                + "_" + "SHNA" \
+                + "_" + "A" \
                 + "_" + search_object(h5_obj, "zeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
                 + "_" + search_object(h5_obj, "zeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
-                + "_" + "T00777" \    # CRID hardcoded
-                + "_" + "M" \         # Product accuracy (P, M, N, F)
-                + "_" + "F" \         # Coverage indicator (F, P)
-                + "_" + "J" \         # Location of SDS (J=JPL, N=NRSC)
-                + "_" + "777" \       # Product counter
-                + ".h5")    
-        elif (search_object(h5_obj, "productType")) in ["RIFG", "RUNW", "ROFF"]:
+                + "_" + "T00777" \
+                + "_" + "M" \
+                + "_" + "F" \
+                + "_" + "J" \
+                + "_" + "777" \
+                + ".h5")
+        elif product_type in ["RIFG", "RUNW", "ROFF"]:
             new_filename= ("NISAR_" \
                 +"L1" \
-                + "_" + "PR" \      # Processing Type
-                + "_" + search_object(h5_obj, "productType") \
-                + "_" + "001" \     # Cycle number hardcoded
-                + "_" + "001" \     # Relative orbit number hardcoded
-                + "_" + "A" \       # direction of movement
-#                + "_" + "{:03d}".format(search_object(h5_obj, "frameNumber")) \
-                + "_" + "013" \     # Framenumber hardcoded
-                + "_" + "013" \     # 2nd Cyclenumber hardcoded
-                + "_" + "2000" \    # MODE hardcoded
-                + "_" + "SH" \      # Polarization hardcoded
+                + "_" + "PR" \
+                + "_" + product_type \
+                + "_" + "001" \
+                + "_" + "001" \
+                + "_" + "A" \
+                + "_" + frame_number \
+                + "_" + "013" \
+                + "_" + "2000" \
+                + "_" + "SH" \
                 + "_" + search_object(h5_obj, "referenceZeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
                 + "_" + search_object(h5_obj, "referenceZeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
                 + "_" + search_object(h5_obj, "secondaryZeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
                 + "_" + search_object(h5_obj, "secondaryZeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
-                + "_" + "T00888" \     # CRID hardcoded
-                + "_" + "M" \          # Product accuracy (P, M, N, F)
-                + "_" + "F" \          # Coverage indicator (F, P)
-                + "_" + "J" \          # Location of SDS (J=JPL, N=NRSC)
-                + "_" + "888" \        # Product counter
+                + "_" + "T00888" \
+                + "_" + "M" \
+                + "_" + "F" \
+                + "_" + "J" \
+                + "_" + "888" \
                 + ".h5")
-        elif (search_object(h5_obj, "productType")) in ["GUNW", "GOFF"]:
+        elif product_type in ["GUNW", "GOFF"]:
             new_filename= ("NISAR_" \
                 +"L2" \
-                + "_" + "PR" \      # Processing Type
-                + "_" + search_object(h5_obj, "productType") \
-                + "_" + "001" \     # Cycle number hardcoded
-                + "_" + "001" \     # Relative orbit number hardcoded
-                + "_" + "A" \       # direction of movement
-#                + "_" + "{:03d}".format(search_object(h5_obj, "frameNumber")) \
-                + "_" + "013" \     # Framenumber hardcoded
-                + "_" + "013" \     # 2nd Cyclenumber hardcoded
-                + "_" + "2000" \    # MODE hardcoded
-                + "_" + "SH" \      # Polarization hardcoded
+                + "_" + "PR" \
+                + "_" + product_type \
+                + "_" + "001" \
+                + "_" + "001" \
+                + "_" + "A" \
+                + "_" + frame_number \
+                + "_" + "013" \
+                + "_" + "2000" \
+                + "_" + "SH" \
                 + "_" + search_object(h5_obj, "referenceZeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
                 + "_" + search_object(h5_obj, "referenceZeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
                 + "_" + search_object(h5_obj, "secondaryZeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
                 + "_" + search_object(h5_obj, "secondaryZeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
-                + "_" + "T00888" \  # CRID hardcoded
-                + "_" + "M" \       # Product accuracy (P, M, N, F)
-                + "_" + "F" \       # Coverage indicator (F, P)
-                + "_" + "J" \       # Location of SDS (J=JPL, N=NRSC)
-                + "_" + "888" \     # Product counter
+                + "_" + "T00888" \
+                + "_" + "M" \
+                + "_" + "F" \
+                + "_" + "J" \
+                + "_" + "888" \
                 + ".h5")
         elif (search_object(h5_obj, "Soil_moisture")) is not None:
             new_filename= ("NISAR_" \
                 +"L3" \
-                + "_" + "PR" \      # Processing Type
+                + "_" + "PR" \
                 + "_" + "SME2" \
-                + "_" + "001" \     # Cycle number hardcoded
-                + "_" + "001" \     # Relative orbit number hardcoded
-                + "_" + "A" \       # direction of movement
-#                + "_" + "{:03d}".format(search_object(h5_obj, "frameNumber")) \
-                + "_" + "013" \ #Framenumber hardcoded
-                + "_" + "2000" \    # MODE hardcoded
-                + "_" + "SHNA" \    # Polarization hardcoded
-                + "_" + "A" \       # Source of data acquire source(A) vs Mixed source (M)
+                + "_" + "001" \
+                + "_" + "001" \
+                + "_" + "A" \
+                + "_" + frame_number \
+                + "_" + "2000" \
+                + "_" + "SHNA" \
+                + "_" + "A" \
                 + "_" + search_object(h5_obj, "zeroDopplerStartTime").replace('-', '').replace(':', '')[:15] \
                 + "_" + search_object(h5_obj, "zeroDopplerEndTime").replace('-', '').replace(':', '')[:15] \
-                + "_" + "T00888" \  # CRID hardcoded
-                + "_" + "M" \       # Product accuracy (P, M, N, F)
-                + "_" + "F" \       # Coverage indicator (F, P)
-                + "_" + "J" \       # Location of SDS (J=JPL, N=NRSC)
-                + "_" + "888" \     # Product counter
+                + "_" + "T00888" \
+                + "_" + "M" \
+                + "_" + "F" \
+                + "_" + "J" \
+                + "_" + "888" \
                 + ".h5")
                 
     try:

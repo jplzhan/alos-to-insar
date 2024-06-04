@@ -225,18 +225,29 @@ class h5parse:
             raise ValueError(f'{input_file} is not an existing .h5 file!')
 
         with h5py.File(input_file, 'r') as h5_obj:
-            if (h5parse.search_object(
-                    h5_obj, "productType")) in ["RSLC", "GSLC", "GCOV"]:
+            # Attempt to infer frame number
+            try:
+                param_frame_number = h5parse.search_object(h5_obj, "frameNumber")
+                # Attempt to convert the string frame number into an int and reformat it back
+                if isinstance(param_frame_number, str):
+                    param_frame_number = int(param_frame_number)
+                frame_number = "{:03d}".format(param_frame_number)
+            except Exception as e:
+                print(f"An error occurred while inferring the frame number: {e}")
+                frame_number = "013"
+                print(f"Using hardcoded frame number instead: {frame_number}")
+
+            # Format name based on product type
+            product_type = h5parse.search_object(h5_obj, "productType")
+            if product_type in ["RSLC", "GSLC", "GCOV"]:
                 new_filename= ("NISAR_" \
                     +"L1" \
                     + "_" + "PR" \
-                    + "_" + h5parse.search_object(
-                        h5_obj, "productType") \
+                    + "_" + product_type \
                     + "_" + "001" \
                     + "_" + "001" \
                     + "_" + "A" \
-                    + "_" + "{:03d}".format(h5parse.search_object(
-                        h5_obj, "frameNumber")) \
+                    + "_" + frame_number \
                     + "_" + "2000" \
                     + "_" + "SHNA" \
                     + "_" + "A" \
@@ -250,18 +261,15 @@ class h5parse:
                     + "_" + "J" \
                     + "_" + "888" \
                     + ".h5")
-            elif (h5parse.search_object(
-                    h5_obj, "productType")) in ["GSLC", "GCOV"]:
+            elif product_type in ["GSLC", "GCOV"]:
                 new_filename= ("NISAR_" \
                     +"L2" \
                     + "_" + "PR" \
-                    + "_" + h5parse.search_object(
-                        h5_obj, "productType") \
+                    + "_" + product_type \
                     + "_" + "001" \
                     + "_" + "001" \
                     + "_" + "A" \
-                    + "_" + "{:03d}".format(h5parse.search_object(
-                        h5_obj, "frameNumber")) \
+                    + "_" + frame_number \
                     + "_" + "2000" \
                     + "_" + "SHNA" \
                     + "_" + "A" \
@@ -275,18 +283,15 @@ class h5parse:
                     + "_" + "J" \
                     + "_" + "777" \
                     + ".h5")    
-            elif (h5parse.search_object(
-                    h5_obj, "productType")) in ["RIFG", "RUNW", "ROFF"]:
+            elif product_type in ["RIFG", "RUNW", "ROFF"]:
                 new_filename= ("NISAR_" \
                     +"L1" \
                     + "_" + "PR" \
-                    + "_" + h5parse.search_object(
-                        h5_obj, "productType") \
+                    + "_" + product_type \
                     + "_" + "001" \
                     + "_" + "001" \
                     + "_" + "A" \
-                    + "_" + "{:03d}".format(
-                        h5parse.search_object(h5_obj, "frameNumber")) \
+                    + "_" + frame_number \
                     + "_" + "013" \
                     + "_" + "2000" \
                     + "_" + "SH" \
@@ -304,17 +309,16 @@ class h5parse:
                     + "_" + "J" \
                     + "_" + "888" \
                     + ".h5")
-            elif (h5parse.search_object(h5_obj, "productType")) in ["GUNW", "GOFF"]:
+            elif product_type in ["GUNW", "GOFF"]:
                 new_filename= ("NISAR_" \
                     +"L2" \
                     + "_" + "PR" \
-                    + "_" + h5parse.search_object(h5_obj, "productType") \
+                    + "_" + product_type \
                     + "_" + "001" \
                     + "_" + "001" \
                     + "_" + "A" \
                     + "_" + "001" \
-    #                + "_" + "{:03d}".format(h5parse.search_object(h5_obj, "frameNumber")) \
-                    + "_" + "013" \
+                     + "_" + frame_number \
                     + "_" + "2000" \
                     + "_" + "SH" \
                     + "_" + h5parse.search_object(
@@ -339,7 +343,7 @@ class h5parse:
                     + "_" + "001" \
                     + "_" + "001" \
                     + "_" + "A" \
-                    + "_" + "{:03d}".format(h5parse.search_object(h5_obj, "frameNumber")) \
+                    + "_" + frame_number \
                     + "_" + "2000" \
                     + "_" + "SHNA" \
                     + "_" + "A" \
