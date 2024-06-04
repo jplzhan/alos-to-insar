@@ -318,7 +318,7 @@ class h5parse:
                     + "_" + "001" \
                     + "_" + "A" \
                     + "_" + "001" \
-                     + "_" + frame_number \
+                    + "_" + frame_number \
                     + "_" + "2000" \
                     + "_" + "SH" \
                     + "_" + h5parse.search_object(
