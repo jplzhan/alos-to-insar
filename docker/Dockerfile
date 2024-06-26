@@ -5,8 +5,8 @@ USER root
 ENV HOME=/home/jovyan \
     CONDA_DIR=/opt/conda \
     PATH=/opt/conda/bin:$PATH \
-    ISCE3_BUILD_DIR="${HOME}/isce3/build" \
-    NOTEBOOK_PGE_DIR=${HOME}/alos-to-insar/notebook_pges
+    ISCE3_BUILD_DIR=/home/jovyan/isce3/build \
+    NOTEBOOK_PGE_DIR=/home/jovyan/alos-to-insar/notebook_pges
 
 RUN set -ex \
     && useradd -m -s /bin/bash -N -u 1006 -r -d /home/jovyan jovyan \
