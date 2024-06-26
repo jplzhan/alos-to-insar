@@ -4,11 +4,9 @@ USER root
 
 ENV HOME=/home/jovyan \
     CONDA_DIR=/opt/conda \
-    PATH=/opt/conda/bin:$PATH
-
-ENV ISCE3_BUILD_DIR="${HOME}/isce3/build"
-
-ENV NOTEBOOK_PGE_DIR=${HOME}/alos-to-insar/notebook_pges
+    PATH=/opt/conda/bin:$PATH \
+    ISCE3_BUILD_DIR="${HOME}/isce3/build" \
+    NOTEBOOK_PGE_DIR=${HOME}/alos-to-insar/notebook_pges
 
 RUN set -ex \
     && useradd -m -s /bin/bash -N -u 1006 -r -d /home/jovyan jovyan \
@@ -43,9 +41,7 @@ RUN set -ex \
     && mamba install -y -c conda-forge nb_conda_kernels \
     && git clone https://github.com/hysds/notebook_pge_wrapper.git \
     && cd notebook_pge_wrapper \
-    && pip install -e .
-
-RUN set -ex \
+    && pip install -e . \
     && mamba env create -f $HOME/alos-to-insar/environment.yml -n isce3_src \
     && mamba run -n isce3_src python -m ipykernel install --user --name isce3_src --display-name "isce3_src"
 
@@ -58,16 +54,14 @@ ENV CUDAHOSTCXX=x86_64-conda-linux-gnu-g++ \
 RUN set -ex \
     && cd $HOME \
     && git clone https://github.com/isce-framework/isce3.git \
-    && mkdir $HOME/isce3/build
-
-RUN set -ex \
+    && mkdir $HOME/isce3/build \
     && cd $HOME/isce3/build \
-    && git checkout 2d6ea864e2c9f9e766aab0c0823f3bf49aae08b6 \
+    && git checkout release-v0.22 \
     && cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
     && make -j 4 install
 
-ENV PYTHONPATH="${NOTEBOOK_PGE_DIR}:${ISCE3_BUILD_DIR}/packages:${PYTHONPATH}"
-ENV LD_LIBRARY_PATH="${ISCE3_BUILD_DIR}/lib64:${LD_LIBRARY_PATH}"
+ENV PYTHONPATH="${NOTEBOOK_PGE_DIR}:${ISCE3_BUILD_DIR}/packages:${PYTHONPATH}" \
+    LD_LIBRARY_PATH="${ISCE3_BUILD_DIR}/lib64:${LD_LIBRARY_PATH}"
 
 # Fix permissions isues with loading up the bash profile and home profile, .cache folder, and everything else
 RUN chmod 777 /home/jovyan/.bash_profile
