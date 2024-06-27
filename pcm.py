@@ -19,13 +19,18 @@ from datetime import datetime, timezone, timedelta
 import otello
 
 import notebook_pges.isce3_regex as isce3_regex
+from notebook_pges.aws_uploader import AWS
 
 
 # Default settings
-DEFAULT_BUCKET = 's3://nisar-st-data-ondemand/ALOS-1-data'
-DEFAULT_PCM_STORAGE = 's3://nisar-st-rs-ondemand/products'
+DETECTED_ODS = 'adt' if AWS.is_accessible('nisar-adt') else 'st'
+DEFAULT_BUCKET = {
+    'adt': 's3://nisar-adt/ALOS-1-data',
+    'st': 's3://nisar-st-data-ondemand/ALOS-1-data'
+}[DETECTED_ODS]
+DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v1.8.3'
+DEFAULT_VERSION = 'v1.9.0'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -44,7 +49,11 @@ logger = logging.getLogger('pcm_logger')
 
 class PCM:
     """Class for launching PCM jobs."""
-    def __init__(self, repo=DEFAULT_REPO, version=DEFAULT_VERSION, rebuild=False, profile=DEFAULT_AWS_PROFILE):
+    def __init__(self,
+                 repo: str=DEFAULT_REPO,
+                 version: str=DEFAULT_VERSION,
+                 rebuild: bool=False,
+                 profile: str=DEFAULT_AWS_PROFILE):
         # Jenkins docker build
         self.repo = repo
         self.version = version
@@ -65,7 +74,7 @@ class PCM:
             'rslc_to_insar': None,
         }
         
-    def build_pcm(self, tick_rate:float = DEFAULT_BUILD_TICK_SECONDS, rebuild: bool=False):
+    def build_pcm(self, tick_rate:float=DEFAULT_BUILD_TICK_SECONDS, rebuild: bool=False):
         """Initialization method for building the PCM job.
         
         Input Parameters:
@@ -111,8 +120,10 @@ class PCM:
         
         logger.info(f'\'{self.repo}:{self.version}\' successfully built, now continuing...')
         
-    def wait_for_completion(self):
+    def wait_for_completion(self, wait_seconds: float=15):
         """Wait for all submitted jobs in the job set to complete."""
+        logger.info(f'Waiting {wait_seconds} seconds for start up...')
+        time.sleep(wait_seconds)
         logger.info(f'Now waiting for completion of {len(self.job_set)} jobs...')
         self.job_set.wait_for_completion()
     
@@ -126,7 +137,6 @@ class PCM:
     
     def run_alos_to_rslc(self,
                         data_link: str,
-                        output_bucket: str, 
                         gpu_enabled: bool=True,
                         config: str='',
                         queue: str='nisar-job_worker-sciflo-rslc') -> str:
@@ -134,7 +144,6 @@ class PCM:
         
         Input Parameters:
             - data_link: S3 URL to the ALOS-1 data to be processed into NISAR L0B and then RSLC.
-            - output_bucket: S3 bucket location to upload the RLSC result to.
             - gpu_enabled: Whether to run focus.py using the GPU.
             - config: YAML formatted string containing the config to pass to focus.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
@@ -158,14 +167,12 @@ class PCM:
         
     def run_alos2_to_rslc(self,
                         data_link: str,
-                        output_bucket: str, 
                         gpu_enabled: bool=True,
                         queue: str='nisar-job_worker-sciflo-rslc') -> str:
         """Runs ALOS-2 to RSLC.
         
         Input Parameters:
             - data_link: S3 URL to the ALOS-2 data to be processed into NISAR RSLC.
-            - output_bucket: S3 bucket location to upload the RLSC result to.
             - gpu_enabled: Whether to run focus.py using the GPU.
             - config: YAML formatted string containing the config to pass to focus.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
@@ -188,7 +195,6 @@ class PCM:
 
     def run_l0b_to_rslc(self,
                         data_link: str,
-                        output_bucket: str, 
                         gpu_enabled: bool=True,
                         config: str='',
                         queue: str='nisar-job_worker-sciflo-rslc') -> str:
@@ -196,7 +202,6 @@ class PCM:
         
         Input Parameters:
             - data_link: S3 URL to the L0B data to be processed into RSLC.
-            - output_bucket: S3 bucket location to upload the RLSC result to.
             - gpu_enabled: Whether to run focus.py using the GPU.
             - config: YAML formatted string containing the config to pass to focus.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
@@ -219,18 +224,16 @@ class PCM:
         return ret
 
     def run_rslc_to_gslc(self,
-                        data_link: str,
-                        dem: str,
-                        output_bucket: str, 
-                        gpu_enabled: bool=True,
-                        config: str='',
-                        queue: str='nisar-job_worker-sciflo-rslc') -> str:
+                         data_link: str,
+                         dem: str,
+                         gpu_enabled: bool=True,
+                         config: str='',
+                         queue: str='nisar-job_worker-sciflo-rslc') -> str:
         """Runs RSLC to GSLC.
         
         Input Parameters:
             - data_link: S3 URL to the L0B data to be processed into RSLC.
             - dem: S3 URL to the DEM to be processed.
-            - output_bucket: S3 bucket location to upload the GSLC result to.
             - gpu_enabled: Whether to run focus.py using the GPU.
             - config: YAML formatted string containing the config to pass to focus.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
@@ -256,7 +259,6 @@ class PCM:
     def run_rslc_to_gcov(self,
                         data_link: str,
                         dem: str,
-                        output_bucket: str, 
                         gpu_enabled: bool=True,
                         config: str='',
                         queue: str='nisar-job_worker-sciflo-rslc') -> str:
@@ -265,7 +267,6 @@ class PCM:
         Input Parameters:
             - data_link: S3 URL to the L0B data to be processed into RSLC.
             - dem: S3 URL to the DEM to be processed.
-            - output_bucket: S3 bucket location to upload the GSLC result to.
             - gpu_enabled: Whether to run focus.py using the GPU.
             - config: YAML formatted string containing the config to pass to focus.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
@@ -292,7 +293,6 @@ class PCM:
                           rslc_1: str,
                           rslc_2: str,
                           dem: str,
-                          output_bucket: str,
                           gpu_enabled: bool=True,
                           config: str='',
                           queue: str='nisar-job_worker-sciflo-insar-gpu') -> str:
@@ -302,7 +302,6 @@ class PCM:
             - rslc_1: S3 URL to the first RLSC to be processed.
             - rslc_2: S3 URL to the second RSLC to be processed.
             - dem: S3 URL to the DEM to be processed.
-            - output_bucket: S3 bucket location to upload the GUNW result to.
             - gpu_enabled: Whether to run focus.py using the GPU.
             - config: YAML formatted string containing the config to pass to insar.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
@@ -337,3 +336,16 @@ class PCM:
             logger.debug(f'List of Available Queues:\n {queues}')
             self.jobs[job_name] = jt
         return self.jobs[job_name]
+
+    @staticmethod
+    def write_manifest(outfname: str, io_list: list, header=None):
+        """Writes the io_list to outfile."""
+        os.makedirs(os.path.dirname(outfname), exist_ok=True)
+        with open(outfname, 'w', encoding='utf-8') as f:
+            if header is not None:
+                f.write(header.strip())
+            for item in io_list:
+                f.write('\n')
+                f.write(item[0])
+                for i in range(1, len(item)):
+                    f.write(f',{item[i]}')

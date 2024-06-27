@@ -2,7 +2,7 @@ import argparse
 import os
 import subprocess
 
-from pcm import PCM, DEFAULT_BUCKET, SCRIPT_DIR, logger
+from pcm import PCM, AWS, SCRIPT_DIR, logger
 
 
 def main() -> int:
@@ -30,7 +30,6 @@ def main() -> int:
         required=False,
         type=str,
         help='S3 URL to where the RSLC results will be uploaded.',
-        default=f'{DEFAULT_BUCKET}/GUNW'
     )
     parser.add_argument(
         '-c',
@@ -48,7 +47,7 @@ def main() -> int:
         action='store',
         required=False,
         type=str,
-        help='Dem file for running insar.py',
+        help='DEM file for running insar.py',
     )
     args = parser.parse_args()
     
@@ -56,40 +55,66 @@ def main() -> int:
     if args.dem is None:
         logger.warning(f'No DEM file was specified, running stage_dem.py is suggested.')
         args.dem = ''
+    elif not AWS.s3_url_exists(args.dem):
+        logger.error(f'DEM: {args.dem} does not exist. Aborting...')
+        return 1
     
     if args.config is None:
         args.config = os.path.join(SCRIPT_DIR, 'templates', 'insar.yaml')
         logger.warning(f'No run config was specified, using default: {args.config}')
-    
-    if args.output_bucket is None:
-        logger.warning(f'No output bucket specified, using default: {args.output_bucket}')
-    
+
     with open(args.config, 'r', encoding='utf-8') as f:
         config = f.read()
     outdir_list = []
     pcm = PCM()
-    
+    start_time_str, _ = pcm.get_str_time()
+
+    module_name = 'RSLC'
     if len(args.rslc_n) > 0:
+        # Process pairs based on the command line if there is more than 1 positional argument
+        # Dry run to sanity check the inputs
         for i in range(len(args.rslc_n)):
             prev_rslc = args.rslc if i == 0 else args.rslc_n[i - 1]
             for next_rslc in args.rslc_n[i:]:
-                # Sanity checker
                 if prev_rslc == next_rslc:
-                    logger.error(f'WARNING: Detected pair using "{prev_rslc}" as both the reference and secondary RSLC, which will not generate a useful product. Aborting submission script...\n')
+                    logger.error(f'WARNING: Detected pair using "{prev_rslc}" as both the reference and secondary RSLC.')
+                    logger.error('This will not generate a useful product. Aborting submission script..\n')
                     return 1
-                outdir_list.append([prev_rslc, next_rslc, pcm.run_rslc_to_insar(prev_rslc, next_rslc, args.dem, args.output_bucket, config=config)])
+                if not AWS.all_s3_urls_exist([prev_rslc, next_rslc], module_name):
+                    return 1
+        # Submit the jobs
+        for i in range(len(args.rslc_n)):
+            prev_rslc = args.rslc if i == 0 else args.rslc_n[i - 1]
+            for next_rslc in args.rslc_n[i:]:
+                outdir_list.append([prev_rslc, next_rslc, pcm.run_rslc_to_insar(prev_rslc, next_rslc, args.dem, config=config)])
     else:
+        # Process pairs based on an input CSV file if there is only 1 positional argument
         with open(args.rslc, 'r', encoding='utf-8') as f:
-            for line in f:
-                urls = line.split(',')
-                # Sanity checker
+            csv_table = [row.split(',') for row in f.readlines()]
+            # Dry run to sanity check the inputs
+            for urls in csv_table:
                 if urls[0] == urls[1]:
-                    logger.error(f'WARNING: Detected pair using {urls[0]} as both the reference and secondary RSLC, which will not generate a useful product. Aborting submission script..\n')
+                    logger.error(f'WARNING: Detected pair using {urls[0]} as both the reference and secondary RSLC.')
+                    logger.error('This will not generate a useful product. Aborting submission script..\n')
                     return 1
-                outdir_list.append([urls[0], urls[1], pcm.run_rslc_to_insar(urls[0], urls[1], args.dem, args.output_bucket, config=config)])
-    
+                if not AWS.all_s3_urls_exist([urls[0], urls[1]], module_name):
+                    return 1
+            # Submit the jobs
+            for urls in csv_table:
+                outdir_list.append([urls[0], urls[1], pcm.run_rslc_to_insar(urls[0], urls[1], args.dem, config=config)])
+    # Write manifest
+    manifest_log = os.path.join(os.getcwd(), 'log', f'{os.path.basename(__file__).split(".")[0]}_{start_time_str}.log')
+    PCM.write_manifest(manifest_log, outdir_list, header='RSLC Data,INSAR Directory')
+    logger.info(f'Manifest log written to: {manifest_log}')
+
     pcm.wait_for_completion()
     
+    if args.output_bucket is None:
+        logger.warning(f'No output bucket specified, manifest log written to: {manifest_log}')
+        return 0
+    elif args.output_bucket[-1] == '/':
+        args.output_bucket = args.output_bucket[:-1]
+
     # Copy results to the specified output bucket
     for link_1, link_2, outdir in outdir_list:
         logger.info(f'Copying results for {link_1} and {link_2} -> {outdir} -> {args.output_bucket}')

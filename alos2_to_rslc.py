@@ -2,7 +2,7 @@ import argparse
 import os
 import subprocess
 
-from pcm import PCM, DEFAULT_BUCKET, SCRIPT_DIR, logger
+from pcm import PCM, AWS, SCRIPT_DIR, logger
 
 
 def main() -> int:
@@ -25,35 +25,32 @@ def main() -> int:
         required=False,
         type=str,
         help='S3 URL to where the RSLC results will be uploaded.',
-        default=f'{DEFAULT_BUCKET}/RSLC'
     )
-    # parser.add_argument(
-    #     '-d',
-    #     '--dem',
-    #     dest='dem',
-    #     action='store',
-    #     required=False,
-    #     type=str,
-    #     help='Dem file for running focus.py'
-    # )
     args = parser.parse_args()
-    
-    # Sanity checking inputs
-    # if args.dem is None:
-    #     logger.warning(f'No DEM file was specified.')
-    #     args.dem = ''
-    
-    if args.output_bucket is None:
-        logger.warning(f'No output bucket specified, using default: {args.output_bucket}')
-    elif args.output_bucket[-1] == '/':
-        args.output_bucket = args.output_bucket[:-1]
-    
+
     outdir_list = []
     pcm = PCM()
+    start_time_str, _ = pcm.get_str_time()
+
+    # Pre-sanitize ALOS-2 data links
+    module_name = 'ALOS-2'
+    if not AWS.all_s3_urls_exist(args.data_links, module_name):
+        return 1
+    # Submit jobs
     for link in args.data_links:
-        outdir_list.append([link, pcm.run_alos2_to_rslc(link, args.output_bucket)])
+        outdir_list.append([link, pcm.run_alos2_to_rslc(link)])
+    # Write manifest
+    manifest_log = os.path.join(os.getcwd(), 'log', f'{os.path.basename(__file__).split(".")[0]}_{start_time_str}.log')
+    PCM.write_manifest(manifest_log, outdir_list, header='ALOS-2 Data,RSLC Directory')
+    logger.info(f'Manifest log written to: {manifest_log}')
     
     pcm.wait_for_completion()
+
+    if args.output_bucket is None:
+        logger.warning(f'No output bucket specified, manifest log written to: {manifest_log}')
+        return 0
+    elif args.output_bucket[-1] == '/':
+        args.output_bucket = args.output_bucket[:-1]
     
     # Copy results to the specified output bucket
     for link, outdir in outdir_list:

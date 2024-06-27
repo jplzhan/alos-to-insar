@@ -85,3 +85,56 @@ class AWS:
         s3.download_file(p.netloc, p.path[1:], dest_file)
 
         return dest_file
+
+    @staticmethod
+    def list_s3(url: str, prefix: str='') -> list:
+        """Returns a list of objects prefixed with the specified string in the bucket associated with URL."""
+        s3 = boto3.resource('s3')
+        my_bucket = s3.Bucket(url)
+
+        ret = []
+        for object_summary in my_bucket.objects.filter(Prefix=prefix):
+            ret.append(object_summary.key)
+        return ret
+
+    @staticmethod
+    def s3_url_exists(url: str) -> bool:
+        """Returns whether or not the specified path exists on S3."""
+        parsed_url = urlparse(url)
+        bucket = parsed_url.netloc
+        path = parsed_url.path
+
+        if path.startswith('/'):
+            path = path[1:]
+        if path.endswith('/'):
+            path = path[:-1]
+        if bucket.endswith('/'):
+            bucket = bucket[:-1]
+
+        return path in AWS.list_s3(bucket, prefix=path)
+
+    @staticmethod
+    def all_s3_urls_exist(s3_urls: list, module_name: str) -> bool:
+        for link in s3_urls:
+            try:
+                if not AWS.s3_url_exists(link):
+                    print(f'{module_name}: {link} does not exist. Aborting...')
+                    return False
+            except Exception as e:
+                print(f'Exception caught: {e}')
+                print(f'{module_name}: {link} is inaccessible. Aborting...')
+                return False
+        return True
+
+    @staticmethod
+    def is_accessible(bucket_name: str) -> bool:
+        """Returns whether a bucket is readable."""
+        s3 = boto3.resource('s3')
+        bucket = s3.Bucket(bucket_name)
+        try:
+            for _ in bucket.objects.all():
+                break
+            return True
+        except botocore.exceptions.ClientError:
+            print(f'{bucket_name} is NOT accessible.')
+        return False

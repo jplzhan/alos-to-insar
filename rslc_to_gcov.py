@@ -2,7 +2,7 @@ import argparse
 import os
 import subprocess
 
-from pcm import PCM, DEFAULT_BUCKET, SCRIPT_DIR, logger
+from pcm import PCM, AWS, SCRIPT_DIR, logger
 
 
 def main() -> int:
@@ -25,7 +25,6 @@ def main() -> int:
         required=False,
         type=str,
         help='S3 URL to where the RSLC results will be uploaded.',
-        default=f'{DEFAULT_BUCKET}/GCOV'
     )
     parser.add_argument(
         '-c',
@@ -43,7 +42,7 @@ def main() -> int:
         action='store',
         required=False,
         type=str,
-        help='Dem file for running gcov.py'
+        help='DEM file for running gcov.py'
     )
     args = parser.parse_args()
     
@@ -51,23 +50,40 @@ def main() -> int:
     if args.dem is None:
         logger.warning(f'No DEM file was specified.')
         args.dem = ''
+    elif not AWS.s3_url_exists(args.dem):
+        logger.error(f'DEM: {args.dem} does not exist. Aborting...')
+        return 1
     
     if args.config is None:
         args.config = os.path.join(SCRIPT_DIR, 'templates', 'gcov.yaml')
         logger.warning(f'No run config was specified, using default: {args.config}')
-    
-    if args.output_bucket is None:
-        logger.warning(f'No output bucket specified, using default: {args.output_bucket}')
-    
+
     with open(args.config, 'r', encoding='utf-8') as f:
         config = f.read()
     outdir_list = []
     pcm = PCM()
+    start_time_str, _ = pcm.get_str_time()
+
+    # Pre-sanitize RSLC data links
+    module_name = 'RSLC'
+    if not AWS.all_s3_urls_exist(args.data_links, module_name):
+        return 1
+    # Submit jobs
     for link in args.data_links:
-        outdir_list.append([link, pcm.run_rslc_to_gcov(link, args.dem, args.output_bucket, config=config)])
+        outdir_list.append([link, pcm.run_rslc_to_gcov(link, args.dem, config=config)])
+    # Write manifest
+    manifest_log = os.path.join(os.getcwd(), 'log', f'{os.path.basename(__file__).split(".")[0]}_{start_time_str}.log')
+    PCM.write_manifest(manifest_log, outdir_list, header='RSLC Data,GCOV Directory')
+    logger.info(f'Manifest log written to: {manifest_log}')
 
     pcm.wait_for_completion()
     
+    if args.output_bucket is None:
+        logger.warning(f'No output bucket specified, manifest log written to: {manifest_log}')
+        return 0
+    elif args.output_bucket[-1] == '/':
+        args.output_bucket = args.output_bucket[:-1]
+
     # Copy results to the specified output bucket
     for link, outdir in outdir_list:
         logger.info(f'Copying results for {link} -> {outdir} -> {args.output_bucket}')
