@@ -135,6 +135,6 @@ class AWS:
             for _ in bucket.objects.all():
                 break
             return True
-        except botocore.exceptions.ClientError:
+        except ClientError:
             print(f'{bucket_name} is NOT accessible.')
         return False
