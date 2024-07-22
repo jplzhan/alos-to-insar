@@ -239,7 +239,7 @@ class h5parse:
 
             # Format name based on product type
             product_type = h5parse.search_object(h5_obj, "productType")
-            if product_type in ["RSLC", "GSLC", "GCOV"]:
+            if product_type in ["RSLC"]:
                 new_filename= ("NISAR_" \
                     +"L1" \
                     + "_" + "PR" \

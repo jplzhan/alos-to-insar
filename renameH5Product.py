@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
         # Format name based on product type
         product_type = search_object(h5_obj, "productType")
-        if product_type in ["RSLC", "GSLC", "GCOV"]:
+        if product_type in ["RSLC"]:
             new_filename= ("NISAR_" \
                 +"L1" \
                 + "_" + "PR" \
