@@ -16,6 +16,9 @@ RUN set -ex \
                       autoconf ImageMagick openssh-clients httpd \
     && yum install -y environment-modules emacs.x86_64 make.x86_64 \
     && yum clean all \
+    && sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
+    && sed -i s/^\#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
+    && sed -i s/^mirrorlist=http/\#mirrorlist=http/g /etc/yum.repos.d/*.repo \
     && echo 'skip_missing_names_on_install=False' >> /etc/yum.conf \
     && rm -rf /var/cache/yum \
     && curl -sSL https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh -o miniconda.sh \
