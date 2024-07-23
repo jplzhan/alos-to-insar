@@ -11,6 +11,10 @@ ENV HOME=/home/jovyan \
 RUN set -ex \
     && useradd -m -s /bin/bash -N -u 1006 -r -d /home/jovyan jovyan \
     && echo "jovyan ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
+    && yum clean all \
+    && sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
+    && sed -i s/^\#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
+    && sed -i s/^mirrorlist=http/\#mirrorlist=http/g /etc/yum.repos.d/*.repo \
     && yum update -y \
     && yum install -y curl sudo less bzip2 zip unzip centos-release-scl-rh yum-utils which file make configure \
                       autoconf ImageMagick openssh-clients httpd \
