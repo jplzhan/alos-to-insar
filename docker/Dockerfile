@@ -17,12 +17,12 @@ RUN set -ex \
     && sed -i s/^mirrorlist=http/\#mirrorlist=http/g /etc/yum.repos.d/*.repo \
     && yum update -y \
     && yum install -y curl sudo less bzip2 zip unzip centos-release-scl-rh yum-utils which file make configure \
-                      autoconf ImageMagick openssh-clients httpd \
-    && yum install -y environment-modules emacs.x86_64 make.x86_64 \
+                      autoconf ImageMagick openssh-clients httpd environment-modules emacs.x86_64 \
     && yum clean all \
     && sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
     && sed -i s/^\#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
     && sed -i s/^mirrorlist=http/\#mirrorlist=http/g /etc/yum.repos.d/*.repo \
+    && yum install -y make.x86_64 \
     && echo 'skip_missing_names_on_install=False' >> /etc/yum.conf \
     && rm -rf /var/cache/yum \
     && curl -sSL https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh -o miniconda.sh \
