@@ -30,7 +30,7 @@ DEFAULT_BUCKET = {
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v1.9.1'
+DEFAULT_VERSION = 'v1.9.2'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -228,7 +228,7 @@ class PCM:
                          dem: str,
                          gpu_enabled: bool=True,
                          config: str='',
-                         queue: str='nisar-job_worker-sciflo-rslc') -> str:
+                         queue: str='nisar-job_worker-sciflo-gslc') -> str:
         """Runs RSLC to GSLC.
         
         Input Parameters:
@@ -261,7 +261,7 @@ class PCM:
                         dem: str,
                         gpu_enabled: bool=True,
                         config: str='',
-                        queue: str='nisar-job_worker-sciflo-rslc') -> str:
+                        queue: str='nisar-job_worker-sciflo-gcov') -> str:
         """Runs RSLC to GCOV.
         
         Input Parameters:
@@ -295,7 +295,7 @@ class PCM:
                           dem: str,
                           gpu_enabled: bool=True,
                           config: str='',
-                          queue: str='nisar-job_worker-sciflo-insar-gpu') -> str:
+                          queue: str=None) -> str:
         """Runs RSLC to INSAR.
         
         Input Parameters:
@@ -321,7 +321,10 @@ class PCM:
             timestamp=ts)
         ret = f'{DEFAULT_PCM_STORAGE}/L2_L_GUNW/{folder}/{ret}'
         logger.info(f'Submitting INSAR conversion job for {rslc_1} and {rslc_2}... (storage: {ret})')
-        self.job_set.append(jt.submit_job(queue=queue))
+
+        queue_ext = 'gpu' if gpu_enabled else 'cpu'
+        queue_final = queue if queue is not None else f'nisar-job_worker-sciflo-insar-{queue_ext}'
+        self.job_set.append(jt.submit_job(queue=queue_final))
         self.num_jobs += 1
         return ret
         
