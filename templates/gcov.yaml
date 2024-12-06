@@ -7,7 +7,7 @@ runconfig:
 
         input_file_group:
             # REQUIRED - One NISAR L1B RSLC formatted HDF5 file
-            input_file_path: ../RSLC/output_rslc_20081012/rslc.h5
+            input_file_path:
 
             # REQUIRED for QA. NOT REQUIRED if only running Product SAS.
             # If Product SAS and QA SAS are run back-to-back,
@@ -18,9 +18,9 @@ runconfig:
 
         dynamic_ancillary_file_group:
             # REQUIRED - Digital elevation model
-            dem_file: ../GUNW/dem_0.tiff
+            dem_file:
 
-            # PLACEHOLDER - Digital elevation model file description, optional
+            # OPTIONAL - Digital elevation model file description, optional
             dem_file_description:
 
             # External orbit file
@@ -46,37 +46,89 @@ runconfig:
             # Defaults to './qa'
             qa_output_dir: ./qa
 
-        # Output options for GCOV terms (e.g., HHHH, HVHV, VVVV)
-        output_gcov_terms:
-            # PLACEHOLDER - Output format
-            format: HDF5
+        # Output options
+        output:
 
-            # Compression type. 'none' for no compression
-            compression_type: gzip
+            # HDF5 file space management strategy.  In our tests, the "page"
+            # strategy works well for accessing files stored on the cloud by
+            # reducing the number of high-latency REST API calls needed to read
+            # datasets and their metadata.
+            fs_strategy: page
 
-            # Compression level
-            compression_level: 9
+            # HDF5 file space page size.  Only relevant when fs_strategy="page".
+            # Ideally at least large enough to hold `chunk_size` amount of
+            # uncompressed data as well as its metadata.
+            fs_page_size: 4194304
 
-            # PLACEHOLDER - Compression number of bits
-            nbits: 16
+            # Output options for GCOV terms (e.g., HHHH, HVHV, VVVV)
+            output_gcov_terms:
+                # PLACEHOLDER - Output format
+                format: HDF5
 
-        # Output options for secondary layers (e.g., number of looks, RTC ANF)
-        output_secondary_layers:
-            # PLACEHOLDER - Output format
-            format: HDF5
+                # Enable/disable compression of output raster
+                compression_enabled: True
 
-            # Compression type. 'none' for no compression
-            compression_type: gzip
+                # Compression type. 'none' for no compression
+                compression_type: gzip
 
-            # Compression level
-            compression_level: 9
+                # Compression level
+                compression_level: 1
 
-            # PLACEHOLDER - Compression number of bits
-            nbits: 16
+                # Enable/disable chunking of output raster
+                chunking_enabled: True
+
+                # Chunk size of output raster as a list: [y, x]
+                # If no value is specified, the chunk_size defaults to [512, 512]
+                # or a smaller size, constrained by the dimensions of the image
+                chunk_size: [512, 512]
+
+                # Enable/disable shuffle filtering of output raster
+                shuffle_filtering_enabled: True
+
+                # Number bits retained in the mantissa of the floating point
+                # representation of each component real and imaginary (if applicable)
+                # of each output sample.
+                # If no value is provided, the mantissa bits truncation is not applied
+                mantissa_nbits:
+
+            # Output options for secondary layers (e.g., number of looks, RTC ANF)
+            output_secondary_layers:
+                # PLACEHOLDER - Output format
+                format: HDF5
+
+                # Enable/disable compression of output raster
+                compression_enabled: True
+
+                # Compression type. 'none' for no compression
+                compression_type: gzip
+
+                # Compression level
+                compression_level: 1
+
+                # Enable/disable chunking of output raster
+                chunking_enabled: True
+
+                # Chunk size of output raster as a list: [y, x]
+                # If no value is specified, the chunk_size defaults to [512, 512]
+                # or a smaller size, constrained by the dimensions of the image
+                chunk_size: [512, 512]
+
+                # Enable/disable shuffle filtering of output raster
+                shuffle_filtering_enabled: True
+
+                # Number bits retained in the mantissa of the floating point
+                # representation of each component real and imaginary (if applicable)
+                # of each output sample.
+                # If no value is provided, the mantissa bits truncation is not applied
+                mantissa_nbits:
 
         primary_executable:
             product_type: GCOV
             product_version: 0.1.0
+            product_doi:
+            composite_release_id:
+            processing_type:
+            processing_center:
             partial_granule_id:
 
         debug_level_group:
@@ -159,7 +211,7 @@ runconfig:
                 # OPTIONAL - Choices:
                 # "beta0" (default)
                 # "sigma0"
-                input_terrain_radiometry: sigma0
+                input_terrain_radiometry: beta0
 
                 # OPTIONAL - Minimum RTC area factor in dB
                 rtc_min_value_db:
@@ -178,7 +230,7 @@ runconfig:
                 #  'projection_angle' - estimate the beta surface reference area `A_beta`
                 #     using the projection angle method:
                 #     `A_beta = A_sigma * cos(projection_angle)`
-                area_beta_mode: pixel_area
+                area_beta_mode: auto
 
             # OPTIONAL - Mechanism to specify output posting and DEM
             geocode:
@@ -191,6 +243,28 @@ runconfig:
                 # Apply radiometric terrain correction
                 apply_rtc: True
 
+                # PLACEHOLDER (it is expected that the RSLC product already
+                # incorporates static tropospheric delay corrections --
+                # no additional correction is currently applied)
+                # Apply dry tropospheric delay correction
+                apply_dry_tropospheric_delay_correction: False
+
+                # PLACEHOLDER (it is expected that the RSLC product already
+                # incorporates static tropospheric delay corrections --
+                # no additional correction is currently applied)
+                # Apply wet tropospheric delay correction
+                apply_wet_tropospheric_delay_correction: False
+
+                # Apply range ionospheric delay correction
+                # If True, a TEC file must be supplied.
+                # Defaults to True if a TEC file is supplied; otherwise False.
+                apply_range_ionospheric_delay_correction:
+
+                # Apply azimuth ionospheric delay correction
+                # If True, a TEC file must be supplied.
+                # Defaults to True if a TEC file is supplied; otherwise False.
+                apply_azimuth_ionospheric_delay_correction:
+
                 # Apply RSLC metadata valid-samples sub-swath masking
                 apply_valid_samples_sub_swath_masking: False
 
@@ -198,7 +272,7 @@ runconfig:
                 apply_shadow_masking: True
 
                 # Memory mode. Choices: "single_block", "geogrid", "geogrid_and_radargrid", and "auto" (default)
-                memory_mode:
+                memory_mode: auto
 
                 # OPTIONAL - Processing upsampling factor applied to input geogrid
                 geogrid_upsampling: 1
@@ -212,12 +286,17 @@ runconfig:
                 save_rtc_anf: False
 
                 # Save the RTC area normalization factor (ANF) gamma0 to sigma0
-                save_rtc_anf_gamma0_to_sigma0: True
+                # Defaults to `True`, if `apply_rtc` is enabled and RTC output_type
+                # is set to "gamma0", or `False`, otherwise
+                save_rtc_anf_gamma0_to_sigma0:
+
+                # Save the mask layer
+                save_mask: True
 
                 # Save interpolated DEM used to compute GCOV
                 save_dem: False
 
-                # PLACEHOLDER - Save layover shadow mask
+                # PLACEHOLDER - Save the layover shadow mask
                 save_layover_shadow_mask: False
 
                 # PLACEHOLDER - Save the incidence angle
@@ -246,7 +325,7 @@ runconfig:
                 upsample_radargrid: False
 
                 # OPTIONAL - Same as input DEM if not provided.
-                output_epsg: 32611
+                output_epsg:
 
                 # OPTIONAL - Spacing between pixels, in same units as output EPSG.
                 # If not provided, spacing values will be taken from provided DEM.
@@ -254,29 +333,29 @@ runconfig:
                 # ISCE3 output rasters always have North-up West-left orientation
                 output_posting:
                     A:
-                        x_posting: 20
-                        y_posting: 20
+                        x_posting:
+                        y_posting:
                     B:
-                        x_posting: 
+                        x_posting:
                         y_posting:
 
                 # OPTIONAL - To control output grid in same units as output EPSG
-                y_snap: 20
+                y_snap:
 
                 # OPTIONAL - To control output grid in same units as output EPSG
-                x_snap: 20
+                x_snap:
 
                 # OPTIONAL - Can control with absolute values or with snap values
-               
                 top_left:
                     # OPTIONAL - Set top-left y in same units as output EPSG
-                    y_abs:  3913615.0
+                    y_abs:
                     # OPTIONAL - Set top-left x in same units as output EPSG
-                    x_abs:  365480.0
+                    x_abs:
+
                 # OPTIONAL - Can control with absolute values or with snap values
                 bottom_right:
-                    y_abs:  3789220.0
-                    x_abs:  456380.0
+                    y_abs:
+                    x_abs:
 
                 # Minimum block size in MB per thread
                 min_block_size:
@@ -319,9 +398,25 @@ runconfig:
                     y_abs:
                     x_abs:
 
+            calibration_information:
+
+                # OPTIONAL - Spacing between pixels, in same units as output EPSG.
+                # All postings/spacings must be > 0.
+                output_posting:
+                    x_posting:
+                    y_posting:
+
+            processing_information:
+
+                # OPTIONAL - Spacing between pixels, in same units as output EPSG.
+                # All postings/spacings must be > 0.
+                output_posting:
+                    x_posting:
+                    y_posting:
+
             geo2rdr:
-                threshold: 1.0e-8
-                maxiter: 100
+                threshold: 1.0e-7
+                maxiter: 50
 
             dem_interpolation_method: biquintic
 
@@ -332,6 +427,27 @@ runconfig:
 
                 # OPTIONAL -
                 correction_type:
+
+        # OPTIONAL - Group containing CEOS Analysis Ready Data (CARD) parameters
+        # to populate the output product's metadata
+        ceos_analysis_ready_data:
+
+            # Data access for the source data (URL or DOI)
+            source_data_access:
+
+            # Data access for the output product (URL or DOI)
+            product_data_access:
+
+            # Data access for the static layers product associated with the output product (URL or DOI)
+            static_layers_data_access:
+
+            # Estimated geometric accuracy (bias and standard deviation)
+            # in meters in the X- and Y-directions over the coordinate
+            # system defined by the product's EPSG code
+            estimated_geometric_accuracy_bias_x:
+            estimated_geometric_accuracy_bias_y:
+            estimated_geometric_accuracy_standard_deviation_x:
+            estimated_geometric_accuracy_standard_deviation_y:
 
         qa:
 
@@ -347,6 +463,15 @@ runconfig:
                 # on the input file, etc..
                 # Default: True
                 qa_reports: true
+
+            validation:
+
+                # True to raise an exception if one or more metadata cubes contains
+                # all non-finite (e.g. Nan, +/- Inf) values, or if one or more
+                # z-dimension height layers in a 3D cube has all non-finite values.
+                # False to quiet the exception (although it will still be logged).
+                # Default: True
+                metadata_cubes_fail_if_all_nan: true
 
             qa_reports:
 
@@ -399,6 +524,14 @@ runconfig:
                     # Default: 0.5
                     gamma: 0.5
 
+                    # Color to plot NaN pixels for the PDF report.
+                    # For transparent, set to None.
+                    # The color should given in a format recognized by matplotlib:
+                    # https://matplotlib.org/stable/users/explain/colors/colors.html
+                    # (Note: Browse image PNG will always plot NaN as transparent.)
+                    # Default: blue
+                    nan_color_in_pdf: blue
+
                     # User-preferred tile shape for processing images by batches.
                     # Actual tile shape may be modified by QA to be an integer
                     # multiple of the number of looks for multilooking, of the
@@ -415,16 +548,27 @@ runconfig:
                     # For example, [2,3] means every 2nd azimuth line and
                     # every 3rd range sample will be used to compute the histograms.
                     # Format: [<azimuth>, <range>]
-                    # Default: (10, 10)
-                    decimation_ratio: [10, 10]
+                    # Default: (8, 8)
+                    decimation_ratio: [8, 8]
 
                     # Range in dB for the backscatter histogram's bin edges. Endpoint will
                     # be included. Format: [<starting value>, <endpoint>]
                     # Default: (-80.0, 20.0)
                     backscatter_histogram_bin_edges_range: [-80.0, 20.0]
 
+                    # The range for the phase histograms' y-axis.
+                    # Format: [<min of range>, <max of range>]
+                    # Examples: None, [0.0, None], [None, 0.7], [-0.2, 1.2], [None, None]
+                    # If the min or max is set to None, then that limit is set dynamically
+                    # based on the range of phase histogram density values.
+                    # If None, this is equivalent to [None, None].
+                    # Default: None
+                    phase_histogram_y_axis_range:
+
                     # True to compute phase histogram in radians units,
                     # False for degrees units.
+                    # Note: If False, suggest adjusting `phase_histogram_y_axis_range`
+                    # appropriately for degrees rather than radians.
                     # Default: True
                     phs_in_radians: true
 

@@ -8,10 +8,18 @@ import zipfile
 import json
 import h5py
 import shutil
+import shapely
+import math
+import numpy as np
 
+from osgeo import gdal
 from urllib.parse import urlparse
+from dataclasses import dataclass
 
 from isce3_regex import *
+
+
+gdal.UseExceptions()
 
 
 def download_alos_data(urls: list, dl_dir: str, dest_dir: str) -> list:
@@ -106,11 +114,12 @@ def download_dem(url: str, dl_dir: str) -> str:
     except Exception as e:
         print(f'Exception caught while downloading DEM Data from S3: {e}')
 
-def write_focus_config(template: dict, target_path: str, yml_path: str, gpu_enabled: bool, outfile: str):
+def write_focus_config(template: dict, target_path: str, dem: str, yml_path: str, gpu_enabled: bool, outfile: str):
     """Writes a focus.py runconfig with the specified target path."""
     os.makedirs(os.path.dirname(outfile), exist_ok=True)
     template['runconfig']['groups']['worker']['gpu_enabled'] = gpu_enabled
     template['runconfig']['groups']['input_file_group']['input_file_path'] = [target_path]
+    template['runconfig']['groups']['dynamic_ancillary_file_group']['dem_file'] = dem
     template['runconfig']['groups']['product_path_group']['sas_output_file'] = outfile
     template['runconfig']['groups']['product_path_group']['sas_config_file'] = yml_path
     with open(yml_path, 'w', encoding='utf-8') as f:
@@ -155,6 +164,10 @@ def write_gcov_config(template: dict, target_path: str, dem: str, yml_path: str,
     template['runconfig']['groups']['input_file_group']['input_file_path'] = target_path
     template['runconfig']['groups']['product_path_group']['sas_output_file'] = outfile
     template['runconfig']['groups']['dynamic_ancillary_file_group']['dem_file'] = dem
+
+    # Specify the GCOV EPSG based on the target_path
+    template['runconfig']['groups']['processing']['geocode']['output_epsg'] = h5parse.get_dem_epsg(dem)
+
     with open(yml_path, 'w', encoding='utf-8') as f:
         yaml.dump(template, f, default_flow_style=False)
         
@@ -165,6 +178,16 @@ def prepend_env_var(env_var: str, val: str) -> str:
         if os.environ[env_var].endswith(':'):
             os.environ[env_var] = os.environ[env_var][:-1]
         return os.environ[env_var]
+
+
+@dataclass
+class BoundingBox:
+    """Simple class for storing the extent of a bounding box."""
+    west: float = 0
+    south: float = 0
+    east: float = 0
+    north: float = 0
+
 
 class h5parse:
     """Parses the h5py fields to help determine an inferred NISAR name."""
@@ -218,6 +241,35 @@ class h5parse:
                     print(f"Value of objectValue: {objectValue}")
                     objectStrValue = f"{objectValue}"
                     return objectStrValue
+
+    @staticmethod
+    def get_dem_epsg(dem_fname) -> BoundingBox:
+        """Returns the UTM zone of an DEM input file."""
+        src = gdal.Open(dem_fname)
+        ulx, xres, xskew, uly, yskew, yres  = src.GetGeoTransform()
+        lrx = ulx + (src.RasterXSize * xres)
+        lry = uly + (src.RasterYSize * yres)
+
+        x1,y1,x2,y2 = math.floor(ulx),math.floor(uly),math.floor(lrx),math.floor(lry)
+        zone = int(np.ceil((ulx + 180)/6))
+
+        if y1 >= 0:
+           return 32600 + zone
+        elif y1 < 0:
+           return 32700 + zone
+
+    @staticmethod
+    def get_bounds(h5_fname) -> BoundingBox:
+        """Returns the extent of a given h5 file, expected to be L0B or RSLC."""
+        with h5py.File(h5_fname, 'r') as h5_file:
+            a_group_key = list(h5_file.keys())[0]
+            bbox = h5_file[a_group_key]['LSAR']['identification']['boundingPolygon'][()]
+            bbox = bbox.decode('utf-8')
+            polygon = shapely.wkt.loads(bbox)
+            xx, yy = polygon.envelope.exterior.coords.xy
+            ret = BoundingBox(west=min(xx), south=min(yy), east=max(xx), north=max(yy))
+        return ret
+
     @staticmethod
     def infer_nisar_name(input_file: str) -> str:
         """Attempts to determine"""

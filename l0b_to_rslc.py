@@ -73,7 +73,7 @@ def main() -> int:
         outdir_list.append([link, pcm.run_l0b_to_rslc(link, config=config)])
     # Write manifest
     manifest_log = os.path.join(os.getcwd(), 'log', f'{os.path.basename(__file__).split(".")[0]}_{start_time_str}.log')
-    PCM.write_manifest(manifest_log, outdir_list, outdir_list, header='L0B Data,RSLC Directory')
+    PCM.write_manifest(manifest_log, outdir_list, header='L0B Data,RSLC Directory')
     logger.info(f'Manifest log written to: {manifest_log}')
 
     pcm.wait_for_completion()
