@@ -25,7 +25,7 @@ RUN set -ex \
     && yum install -y make.x86_64 \
     && echo 'skip_missing_names_on_install=False' >> /etc/yum.conf \
     && rm -rf /var/cache/yum \
-    && curl -sSL https://github.com/conda-forge/miniforge/releases/download/24.11.0-0/Mambaforge-Linux-x86_64.sh -o miniconda.sh \
+    && curl -sSL https://github.com/conda-forge/miniforge/releases/download/24.7.1-0/Mambaforge-24.7.1-0-Linux-x86_64.sh -o miniconda.sh \
     && bash miniconda.sh -b -p /opt/conda \
     && rm miniconda.sh \
     && touch /opt/conda/conda-meta/pinned \
