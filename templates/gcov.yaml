@@ -211,7 +211,7 @@ runconfig:
                 # OPTIONAL - Choices:
                 # "beta0" (default)
                 # "sigma0"
-                input_terrain_radiometry: beta0
+                input_terrain_radiometry: sigma0
 
                 # OPTIONAL - Minimum RTC area factor in dB
                 rtc_min_value_db:
