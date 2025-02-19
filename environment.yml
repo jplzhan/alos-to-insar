@@ -1,7 +1,8 @@
 name: isce3_src
 channels:
-  - conda-forge
   - defaults
+  - conda-forge
+  - nodefaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
@@ -29,6 +30,7 @@ dependencies:
   - backports=1.0=pyhd8ed1ab_3
   - backports.functools_lru_cache=1.6.5=pyhd8ed1ab_0
   - beautifulsoup4=4.12.2=pyha770c72_0
+  - binutils=2.36.1=hdd6e379_2
   - binutils_impl_linux-64=2.36.1=h193b22a_2
   - binutils_linux-64=2.36=hf3e587d_10
   - black=23.10.1=py311h38be061_0
@@ -45,6 +47,7 @@ dependencies:
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.21.0=hd590300_0
   - c-blosc2=2.8.0=hf91038e_1
+  - c-compiler=1.5.2=h0b41bf4_0
   - ca-certificates=2023.08.22=h06a4308_0
   - cached-property=1.5.2=hd8ed1ab_1
   - cached_property=1.5.2=pyha770c72_1
@@ -68,6 +71,7 @@ dependencies:
   - contourpy=1.0.7=py311ha3edf6b_0
   - cryptography=40.0.2=py311h9b4c7bb_0
   - curl=8.4.0=hdbd6064_0
+  - cxx-compiler=1.5.2=hf52228f_0
   - cycler=0.11.0=pyhd8ed1ab_0
   - cytoolz=0.12.0=py311hd4cff14_1
   - dask=2023.4.0=pyhd8ed1ab_0
@@ -102,9 +106,11 @@ dependencies:
   - freetype=2.12.1=hca18f0e_1
   - freexl=1.0.6=h166bdaf_1
   - fsspec=2023.9.0=pyh1a96a4e_0
+  - gcc=11.2.0=h702ea55_10
   - gcc_impl_linux-64=11.2.0=h82a94d6_16
   - gcc_linux-64=11.2.0=h39a9532_10
   - gdal=3.6.3=py311hadb6153_1
+  - gdbm=1.18=h0a1914f_2
   - geojson=3.0.1=pyhd8ed1ab_0
   - geomet=1.0.0=pyhd8ed1ab_0
   - geopandas=0.12.2=pyhd8ed1ab_0
@@ -114,9 +120,11 @@ dependencies:
   - gettext=0.21.1=h27087fc_0
   - gflags=2.2.2=he1b5a44_1004
   - giflib=5.2.1=h0b41bf4_3
+  - git=2.42.0=pl5321h86e50cf_0
   - glog=0.6.0=h6f12383_0
   - gmock=1.13.0=hf52228f_0
   - gtest=1.13.0=hf52228f_0
+  - gxx=11.2.0=h702ea55_10
   - gxx_impl_linux-64=11.2.0=h82a94d6_16
   - gxx_linux-64=11.2.0=hacbe6df_10
   - h5py=3.8.0=nompi_py311h1db17ec_100
@@ -247,6 +255,7 @@ dependencies:
   - partd=1.4.0=pyhd8ed1ab_1
   - pathspec=0.11.2=pyhd8ed1ab_0
   - pcre2=10.40=hc3806b6_0
+  - perl=5.34.0=h5eee18b_2
   - pexpect=4.8.0=pyh1a96a4e_2
   - pickleshare=0.7.5=py_1003
   - pillow=9.5.0=py311h573f0d3_0
@@ -319,6 +328,7 @@ dependencies:
   - setuptools=68.2.2=pyhd8ed1ab_0
   - shapely=2.0.1=py311h54d622a_1
   - six=1.16.0=pyh6c4a22f_0
+  - snaphu=0.4.0=py311h331c9d8_0
   - snappy=1.1.10=h9fff704_0
   - snuggs=1.4.7=py_0
   - sortedcontainers=2.4.0=pyhd8ed1ab_0

@@ -23,14 +23,14 @@ from notebook_pges.aws_uploader import AWS
 
 
 # Default settings
-DETECTED_ODS = 'adt' if AWS.is_accessible('nisar-adt') else 'st'
+DETECTED_ODS = 'adt' if AWS.is_accessible('nisar-adt', verbose=False) else 'st'
 DEFAULT_BUCKET = {
     'adt': 's3://nisar-adt/ALOS-1-data',
     'st': 's3://nisar-st-data-ondemand/ALOS-1-data'
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v2.0.0'
+DEFAULT_VERSION = 'v2.0.1'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -87,6 +87,7 @@ class PCM:
         try:
             self.ci.check_job_exists()
         except Exception as e:
+            logger.info(f'Error ecnountered while checking for registration: {e}')
             logger.info(f'\'{self.repo}:{self.version}\' was unregistered. Now registering...')
             self.ci.register()
 

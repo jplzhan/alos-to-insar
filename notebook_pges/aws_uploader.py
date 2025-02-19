@@ -127,7 +127,7 @@ class AWS:
         return True
 
     @staticmethod
-    def is_accessible(bucket_name: str) -> bool:
+    def is_accessible(bucket_name: str, verbose: bool=True) -> bool:
         """Returns whether a bucket is readable."""
         s3 = boto3.resource('s3')
         bucket = s3.Bucket(bucket_name)
@@ -136,5 +136,6 @@ class AWS:
                 break
             return True
         except ClientError:
-            print(f'{bucket_name} is NOT accessible.')
+            if verbose:
+                print(f'{bucket_name} is NOT accessible.')
         return False
