@@ -30,7 +30,7 @@ DEFAULT_BUCKET = {
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v2.0.1'
+DEFAULT_VERSION = 'v2.0.1-static'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -72,6 +72,7 @@ class PCM:
             'rslc_to_gslc': None,
             'rslc_to_gcov': None,
             'rslc_to_insar': None,
+            'static_workflow': None,
         }
         
     def build_pcm(self, tick_rate:float=DEFAULT_BUILD_TICK_SECONDS, rebuild: bool=False):
@@ -328,10 +329,40 @@ class PCM:
         self.job_set.append(jt.submit_job(queue=queue_final))
         self.num_jobs += 1
         return ret
+
+    def run_static_workflow(self,
+                            data_link: str,
+                            gpu_enabled: bool=True,
+                            config: str='',
+                            queue: str='nisar-job_worker-sciflo-rslc') -> str:
+        """Runs L0B to RSLC.
+        
+        Input Parameters:
+            - data_link: S3 URL to the L0B data to be processed into RSLC.
+            - gpu_enabled: Whether to run focus.py using the GPU.
+            - config: YAML formatted string containing the config to pass to focus.py.
+            - queue: Name of the PCM queue to submit the job to (recommended is default).
+        """
+        ts, folder = self.get_str_time()
+        jt = self.get_job('static_workflow')
+        jt.set_input_params({
+            'data_link': data_link,
+            'gpu_enabled': '1' if gpu_enabled else '0',
+            'config_yml': str(config),
+            'timestamp': ts,
+        })
+        ret = isce3_regex.RSLC_FORMAT.format(
+            polarization=NON_INSAR_POLARIZATION,
+            timestamp=ts)
+        ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
+        logger.info(f'Submitting static workflow job for {data_link}... (storage: {ret})')
+        self.job_set.append(jt.submit_job(queue=queue))
+        self.num_jobs += 1
+        return ret
         
     def get_job(self, job_name: str):
         """Gets the listed job type from Mozart and initializes it."""
-        if self.jobs[job_name] is None:
+        if self.jobs.get(job_name) is None:
             full_job_name = f'job-{job_name}:{self.version}'
             jt = self.mozart.get_job_type(full_job_name)
             jt.initialize()

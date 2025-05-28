@@ -1,0 +1,35 @@
+{
+  "submission_type": "iteration",
+  "params": [
+    {
+      "name": "data_link",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "s3://nisar-st-data-ondemand/ALOS-1-data/L0B/ALPSRP267700710-L0B.h5"
+    },
+    {
+      "name": "gpu_enabled",
+      "from": "submitter",
+      "type": "text",
+      "description": "boolean",
+      "default": "1"
+    },
+    {
+      "name": "config_yml",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
+    },
+    {
+      "name": "timestamp",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "20240131T0123456"
+    }
+  ],
+  "component": "tosca",
+  "label": "STATIC LAYER PGE"
+}

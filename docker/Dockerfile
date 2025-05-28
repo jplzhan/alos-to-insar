@@ -63,7 +63,7 @@ RUN set -ex \
     && git clone https://github.com/isce-framework/isce3.git \
     && mkdir $HOME/isce3/build \
     && cd $HOME/isce3/build \
-    && git checkout v0.24.3 \
+    && git checkout a965aaca423ecf97b3c014fefe23a229518c140c \
     && cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
     && make -j 4 install
 

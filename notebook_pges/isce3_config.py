@@ -96,7 +96,10 @@ def download_alos2_s3_data(url: str, dl_dir: str, dest_dir: str) -> str:
         print(f'Exception caught while downloading ALOS-2 Data from S3: {e}')
 
 def download_dem(url: str, dl_dir: str) -> str:
-    """Downloads a DEM TIFF file given by an S3 url to the specified directory."""
+    """Downloads a DEM TIFF file given by an S3 url to the specified directory.
+
+    This actually works for the Watermask file as well.
+    """
     try:
         os.makedirs(dl_dir, exist_ok=True)
         tiff_f = os.path.join(dl_dir, os.path.basename(urlparse(url).path))
@@ -107,12 +110,12 @@ def download_dem(url: str, dl_dir: str) -> str:
             print(f'{tiff_f} already exists, skipping download...')
 
         if os.path.exists(tiff_f):
-            print('Downloaded DEM:', tiff_f)
+            print('Downloaded DEM/Watermask:', tiff_f)
         else:
             raise ValueError(f'Failed to download {tiff_f}!')
         return tiff_f
     except Exception as e:
-        print(f'Exception caught while downloading DEM Data from S3: {e}')
+        print(f'Exception caught while downloading DEM/Watermask Data from S3: {e}')
 
 def write_focus_config(template: dict, target_path: str, dem: str, yml_path: str, gpu_enabled: bool, outfile: str):
     """Writes a focus.py runconfig with the specified target path."""
@@ -135,13 +138,21 @@ def write_gslc_config(template: dict, target_path: str, dem: str, yml_path: str,
     with open(yml_path, 'w', encoding='utf-8') as f:
         yaml.dump(template, f, default_flow_style=False)
 
-def write_insar_config(template: dict, f1: str, f2: str, dem: str, yml_path: str, gpu_enabled: bool, outfile: str):
+def write_insar_config(template: dict,
+                       f1: str,
+                       f2: str,
+                       dem: str,
+                       watermask: str,
+                       yml_path: str,
+                       gpu_enabled: bool,
+                       outfile: str):
     """Writes the INSAR runconfig with the two specified RSLCs and a DEM path."""
     os.makedirs(os.path.dirname(outfile), exist_ok=True)
     template['runconfig']['groups']['worker']['gpu_enabled'] = gpu_enabled
     template['runconfig']['groups']['input_file_group']['reference_rslc_file'] = f1
     template['runconfig']['groups']['input_file_group']['secondary_rslc_file'] = f2
     template['runconfig']['groups']['dynamic_ancillary_file_group']['dem_file'] = dem
+    template['runconfig']['groups']['dynamic_ancillary_file_group']['water_mask_file'] = watermask
     template['runconfig']['groups']['product_path_group']['sas_output_file'] = outfile
     template['runconfig']['groups']['product_path_group']['scratch_path'] = 'scratch'
     template['runconfig']['groups']['product_path_group']['product_path'] = os.path.dirname(outfile)
@@ -168,6 +179,12 @@ def write_gcov_config(template: dict, target_path: str, dem: str, yml_path: str,
     # Specify the GCOV EPSG based on the target_path
     template['runconfig']['groups']['processing']['geocode']['output_epsg'] = h5parse.get_dem_epsg(dem)
 
+    with open(yml_path, 'w', encoding='utf-8') as f:
+        yaml.dump(template, f, default_flow_style=False)
+
+def write_static_config(template: dict, yml_path: str):
+    """Writes a static.py runconfig with the specified target path."""
+    os.makedirs(os.path.dirname(yml_path), exist_ok=True)
     with open(yml_path, 'w', encoding='utf-8') as f:
         yaml.dump(template, f, default_flow_style=False)
         
