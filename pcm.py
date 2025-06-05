@@ -30,7 +30,7 @@ DEFAULT_BUCKET = {
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v2.0.1-static'
+DEFAULT_VERSION = 'v2.0.2-static'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -331,23 +331,29 @@ class PCM:
         return ret
 
     def run_static_workflow(self,
-                            data_link: str,
-                            gpu_enabled: bool=True,
+                            orbit_xml: str,
+                            pointing_xml: str,
+                            dem: str,
+                            watermask: str,
                             config: str='',
-                            queue: str='nisar-job_worker-sciflo-rslc') -> str:
-        """Runs L0B to RSLC.
+                            queue: str='nisar-job_worker-sciflo-gcov') -> str:
+        """Runs Static Workflow.
         
         Input Parameters:
-            - data_link: S3 URL to the L0B data to be processed into RSLC.
-            - gpu_enabled: Whether to run focus.py using the GPU.
+            - orbit_xml: Raw text of the orbit XML file.
+            - pointing_xml: Raw text of the pointing XML file.
+            - dem: S3 URL to the DEM to be processed.
+            - watermask: S3 URL to the Watermask to be processed.
             - config: YAML formatted string containing the config to pass to focus.py.
             - queue: Name of the PCM queue to submit the job to (recommended is default).
         """
         ts, folder = self.get_str_time()
         jt = self.get_job('static_workflow')
         jt.set_input_params({
-            'data_link': data_link,
-            'gpu_enabled': '1' if gpu_enabled else '0',
+            'dem_vrt_s3_url': dem,
+            'watermask_vrt_s3_url': watermask,
+            'orbit_xml': orbit_xml,
+            'pointing_xml': pointing_xml,
             'config_yml': str(config),
             'timestamp': ts,
         })

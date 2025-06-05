@@ -182,9 +182,15 @@ def write_gcov_config(template: dict, target_path: str, dem: str, yml_path: str,
     with open(yml_path, 'w', encoding='utf-8') as f:
         yaml.dump(template, f, default_flow_style=False)
 
-def write_static_config(template: dict, yml_path: str):
+def write_static_config(template: dict, dem_vrt: str, watermask_vrt: str, yml_path: str):
     """Writes a static.py runconfig with the specified target path."""
     os.makedirs(os.path.dirname(yml_path), exist_ok=True)
+
+    template['runconfig']['groups']['dynamic_ancillary_file_group']['dem_raster_file'] = dem_vrt
+    template['runconfig']['groups']['dynamic_ancillary_file_group']['water_mask_raster_file'] = watermask_vrt
+    template['runconfig']['groups']['dynamic_ancillary_file_group']['orbit_xml_file'] = os.path.join(os.path.dirname(yml_path), 'orbit_final.xml')
+    template['runconfig']['groups']['dynamic_ancillary_file_group']['pointing_xml_file'] = os.path.join(os.path.dirname(yml_path), 'pointing_final.xml')
+    
     with open(yml_path, 'w', encoding='utf-8') as f:
         yaml.dump(template, f, default_flow_style=False)
         
@@ -204,6 +210,17 @@ class BoundingBox:
     south: float = 0
     east: float = 0
     north: float = 0
+
+    @staticmethod
+    def load_from_geogrid(geo_grid: dict) -> object:
+        """Reads in a geo_grid dict from a config and creates a bounding box object."""
+        ret = BoundingBox(
+            west = geo_grid['top_left']['x'],
+            south = geo_grid['bottom_right']['y'],
+            east = geo_grid['bottom_right']['x'],
+            north = geo_grid['top_left']['y']
+        )
+        return ret
 
 
 class h5parse:

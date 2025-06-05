@@ -2,10 +2,7 @@
   "command": "notebook-pge-wrapper execute /home/jovyan/alos-to-insar/notebook_pges/static_workflow.ipynb",
   "time_limit": 86400,
   "soft_time_limit": 86400,
-  "disk_usage": "10GB",
-  "runtime_options": {
-    "gpus": "all"
-  },
+  "disk_usage": "15GB",
   "required_queues": [
     "factotum-job_worker-small"
   ],
@@ -14,11 +11,19 @@
   },
   "params": [
     {
-      "name": "data_link",
+      "name": "dem_vrt_s3_url",
       "destination": "context"
     },
     {
-      "name": "gpu_enabled",
+      "name": "watermask_vrt_s3_url",
+      "destination": "context"
+    },
+    {
+      "name": "orbit_xml",
+      "destination": "context"
+    },
+    {
+      "name": "pointing_xml",
       "destination": "context"
     },
     {
