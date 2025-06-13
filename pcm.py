@@ -30,7 +30,7 @@ DEFAULT_BUCKET = {
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v2.0.3-static'
+DEFAULT_VERSION = 'v2.0.4-static'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
