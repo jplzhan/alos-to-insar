@@ -30,7 +30,7 @@ DEFAULT_BUCKET = {
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v2.0.2-static'
+DEFAULT_VERSION = 'v2.0.3-static'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -361,7 +361,7 @@ class PCM:
             polarization=NON_INSAR_POLARIZATION,
             timestamp=ts)
         ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
-        logger.info(f'Submitting static workflow job for {data_link}... (storage: {ret})')
+        logger.info(f'Submitting static workflow job... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
         self.num_jobs += 1
         return ret

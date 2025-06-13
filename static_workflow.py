@@ -56,7 +56,7 @@ def main() -> int:
         type=str,
         help='DEM VRT file for running static.py'
     )
-        parser.add_argument(
+    parser.add_argument(
         '-w',
         '--watermask',
         dest='watermask',
@@ -106,12 +106,13 @@ def main() -> int:
     # Write manifest
     # manifest_log = os.path.join(os.getcwd(), 'log', f'{os.path.basename(__file__).split(".")[0]}_{start_time_str}.log')
     # PCM.write_manifest(manifest_log, outdir_list, header='L0B Data,Static Layer Directory')
-    logger.info(f'Manifest log written to: {manifest_log}')
+    # logger.info(f'Manifest log written to: {manifest_log}')
 
     pcm.wait_for_completion()
 
     if args.output_bucket is None:
-        logger.warning(f'No output bucket specified, manifest log written to: {manifest_log}')
+        # logger.warning(f'No output bucket specified, manifest log written to: {manifest_log}')
+        logger.warning(f'No output bucket specified, now exiting...')
         return 0
     elif args.output_bucket[-1] == '/':
         args.output_bucket = args.output_bucket[:-1]
