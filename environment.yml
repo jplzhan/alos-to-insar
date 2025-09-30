@@ -282,6 +282,8 @@ dependencies:
   - pulseaudio-client=17.0=hac146a9_1
   - pure_eval=0.2.3=pyhd8ed1ab_1
   - pyaps3=0.3.7=pyhd8ed1ab_0
+  - pybind11=3.0.1=pyh7a1b43c_0
+  - pybind11-global=3.0.1=pyhc7ab6ef_0
   - pycparser=2.22=pyh29332c3_1
   - pygments=2.19.2=pyhd8ed1ab_0
   - pygrib=2.1.6=py312he631bd4_1
