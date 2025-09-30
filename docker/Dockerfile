@@ -16,8 +16,8 @@ RUN set -ex \
     && sed -i s/^\#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
     && sed -i s/^mirrorlist=http/\#mirrorlist=http/g /etc/yum.repos.d/*.repo \
     && yum update -y \
-    && yum install -y curl sudo less bzip2 zip unzip centos-release-scl-rh yum-utils which file make configure \
-                      autoconf ImageMagick openssh-clients httpd environment-modules emacs.x86_64 \
+    && yum install -y curl sudo less bzip2 zip unzip yum-utils which file make \
+                      autoconf openssh-clients httpd environment-modules \
     && yum clean all \
     && sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
     && sed -i s/^\#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
@@ -63,7 +63,7 @@ RUN set -ex \
     && git clone https://github.com/isce-framework/isce3.git \
     && mkdir $HOME/isce3/build \
     && cd $HOME/isce3/build \
-    && git checkout a965aaca423ecf97b3c014fefe23a229518c140c \
+    && git 56a6be2 \
     && cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
     && make -j 4 install
 
