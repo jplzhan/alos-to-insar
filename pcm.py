@@ -30,7 +30,7 @@ DEFAULT_BUCKET = {
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v2.0.6-static'
+DEFAULT_VERSION = 'v2.0.7-static'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -335,6 +335,8 @@ class PCM:
                             pointing_xml: str,
                             dem: str,
                             watermask: str,
+                            dem_margin: float,
+                            watermask_margin: float,
                             config: str='',
                             queue: str='nisar-job_worker-sciflo-gcov') -> str:
         """Runs Static Workflow.
@@ -352,8 +354,10 @@ class PCM:
         jt.set_input_params({
             'dem_vrt_s3_url': dem,
             'watermask_vrt_s3_url': watermask,
-            'orbit_xml': orbit_xml,
-            'pointing_xml': pointing_xml,
+            'dem_margin': dem_margin,
+            'watermask_margin': watermask_margin,
+            'orbit_xml': str(orbit_xml),
+            'pointing_xml': str(pointing_xml),
             'config_yml': str(config),
             'timestamp': ts,
         })

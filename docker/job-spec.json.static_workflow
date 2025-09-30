@@ -2,7 +2,7 @@
   "command": "notebook-pge-wrapper execute /home/jovyan/alos-to-insar/notebook_pges/static_workflow.ipynb",
   "time_limit": 86400,
   "soft_time_limit": 86400,
-  "disk_usage": "15GB",
+  "disk_usage": "40GB",
   "required_queues": [
     "factotum-job_worker-small"
   ],
@@ -16,6 +16,14 @@
     },
     {
       "name": "watermask_vrt_s3_url",
+      "destination": "context"
+    },
+    {
+      "name": "dem_margin",
+      "destination": "context"
+    },
+    {
+      "name": "watermask_margin",
       "destination": "context"
     },
     {

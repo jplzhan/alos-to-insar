@@ -5,13 +5,27 @@
       "name": "dem_vrt_s3_url",
       "from": "submitter",
       "type": "text",
-      "default": "s3://nisar-st-data-ondemand/zhan/watermask.vrt"
+      "default": ""
     },
     {
       "name": "watermask_vrt_s3_url",
       "from": "submitter",
       "type": "text",
-      "default": "s3://nisar-st-data-ondemand/zhan/dem.vrt"
+      "default": ""
+    },
+    {
+      "name": "dem_margin",
+      "from": "submitter",
+      "type": "text",
+      "description": "float",
+      "default": "10"
+    },
+    {
+      "name": "watermask_margin",
+      "from": "submitter",
+      "type": "text",
+      "description": "float",
+      "default": "10"
     },
     {
       "name": "orbit_xml",

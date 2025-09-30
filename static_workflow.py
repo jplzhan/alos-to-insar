@@ -65,6 +65,22 @@ def main() -> int:
         type=str,
         help='Watermask VRT file for running static.py'
     )
+    parser.add_argument(
+        '--dem-margin',
+        dest='dem_margin',
+        action='store',
+        default=10,
+        type=float,
+        help='DEM Margin (in km) for running static.py'
+    )
+    parser.add_argument(
+        '--watermask-margin',
+        dest='watermask_margin',
+        action='store',
+        default=10,
+        type=float,
+        help='Watermask Margin (in km) for running static.py'
+    )
     args = parser.parse_args()
     
     # Sanity checking inputs
@@ -100,8 +116,15 @@ def main() -> int:
     start_time_str, _ = pcm.get_str_time()
 
     # Submit jobs
-    outdir_list.append(['Empty', pcm.run_static_workflow(orbit_xml=orbit_xml, pointing_xml=pointing_xml,
-                                                         dem=args.dem, watermask=args.watermask, config=config)])
+    outdir_list.append(['Empty', pcm.run_static_workflow(
+        orbit_xml=orbit_xml,
+        pointing_xml=pointing_xml,
+        dem=args.dem,
+        watermask=args.watermask,
+        dem_margin=args.dem_margin,
+        watermask_margin=args.watermask_margin,
+        config=config)
+    ])
 
     # Write manifest
     # manifest_log = os.path.join(os.getcwd(), 'log', f'{os.path.basename(__file__).split(".")[0]}_{start_time_str}.log')
