@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.5.2-devel-centos7
+FROM nvidia/cuda:12.8.1-devel-rockylinux8
 
 USER root
 
