@@ -11,20 +11,14 @@ ENV HOME=/home/jovyan \
 RUN set -ex \
     && useradd -m -s /bin/bash -N -u 1006 -r -d /home/jovyan jovyan \
     && echo "jovyan ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
-    && yum clean all \
-    && sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
-    && sed -i s/^\#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
-    && sed -i s/^mirrorlist=http/\#mirrorlist=http/g /etc/yum.repos.d/*.repo \
     && yum update -y \
     && yum install -y curl sudo less bzip2 zip unzip yum-utils which file make \
                       autoconf openssh-clients httpd environment-modules \
     && yum clean all \
-    && sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
-    && sed -i s/^\#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
-    && sed -i s/^mirrorlist=http/\#mirrorlist=http/g /etc/yum.repos.d/*.repo \
     && yum install -y make.x86_64 \
     && echo 'skip_missing_names_on_install=False' >> /etc/yum.conf \
     && rm -rf /var/cache/yum \
+    && yum clean all \
     && curl -sSL https://github.com/conda-forge/miniforge/releases/download/24.7.1-0/Mambaforge-24.7.1-0-Linux-x86_64.sh -o miniconda.sh \
     && bash miniconda.sh -b -p /opt/conda \
     && rm miniconda.sh \
@@ -64,7 +58,7 @@ RUN set -ex \
     && mkdir $HOME/isce3/build \
     && cd $HOME/isce3/build \
     && git checkout 56a6be2 \
-    && cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
+    && /home/jovyan/.local/envs/isce3_src/bin/cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
     && make -j 4 install
 
 ENV PYTHONPATH="${NOTEBOOK_PGE_DIR}:${ISCE3_BUILD_DIR}/packages:${PYTHONPATH}" \
