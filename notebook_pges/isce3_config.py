@@ -247,22 +247,11 @@ def write_static_config(template: dict, dem_vrt: str, watermask_vrt: str, yml_pa
     template['runconfig']['groups']['dynamic_ancillary_file_group']['orbit_xml_file'] = os.path.join(os.path.dirname(yml_path), 'orbit_final.xml')
     template['runconfig']['groups']['dynamic_ancillary_file_group']['pointing_xml_file'] = os.path.join(os.path.dirname(yml_path), 'pointing_final.xml')
 
-    posting_rules = [
-        [20, 20],
-        [10, 5],
-        [5, 5],
-        [2.5, 5],
-    ]
     posting_x = template['runconfig']['groups']['processing']['geo_grid']['posting']['x']
     posting_y = template['runconfig']['groups']['processing']['geo_grid']['posting']['y']
-    found_in_posting_rules = False
-    for posting_spec in posting_rules:
-        if posting_spec[0] == posting_x and posting_spec[1] == posting_y:
-            found_in_posting_rules = True
-            break
     if 'rtc' not in template['runconfig']['groups']['processing']:
         template['runconfig']['groups']['processing']['rtc'] = {}
-    template['runconfig']['groups']['processing']['rtc']['dem_upsample_factor'] = 1 if found_in_posting_rules else 2
+    template['runconfig']['groups']['processing']['rtc']['dem_upsample_factor'] = 1 if (posting_x < 20 and posting_y < 20) else 2
     
     with open(yml_path, 'w', encoding='utf-8') as f:
         yaml.dump(template, f, default_flow_style=False)
