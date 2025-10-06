@@ -49,6 +49,15 @@ def main() -> int:
         type=str,
         help='DEM file for running insar.py',
     )
+    parser.add_argument(
+        '-w',
+        '--watermask',
+        dest='watermask',
+        action='store',
+        required=False,
+        type=str,
+        help='Watermask file for running insar.py',
+    )
     args = parser.parse_args()
     
     # Sanity checking inputs
@@ -59,6 +68,13 @@ def main() -> int:
         logger.error(f'DEM: {args.dem} does not exist. Aborting...')
         return 1
     
+    if args.watermask is None:
+        logger.warning(f'No watermask file was specified, running stage_watermask.py is suggested.')
+        args.watermask = ''
+    elif not AWS.s3_url_exists(args.watermask):
+        logger.error(f'DEM: {args.watermask} does not exist. Aborting...')
+        return 1
+
     if args.config is None:
         args.config = os.path.join(SCRIPT_DIR, 'templates', 'insar.yaml')
         logger.warning(f'No run config was specified, using default: {args.config}')
@@ -86,7 +102,9 @@ def main() -> int:
         for i in range(len(args.rslc_n)):
             prev_rslc = args.rslc if i == 0 else args.rslc_n[i - 1]
             for next_rslc in args.rslc_n[i:]:
-                outdir_list.append([prev_rslc, next_rslc, pcm.run_rslc_to_insar(prev_rslc, next_rslc, args.dem, config=config)])
+                outdir_list.append([prev_rslc, next_rslc,
+                    pcm.run_rslc_to_insar(prev_rslc, next_rslc, args.dem, args.watermask, config=config)
+                ])
     else:
         # Process pairs based on an input CSV file if there is only 1 positional argument
         with open(args.rslc, 'r', encoding='utf-8') as f:
@@ -101,7 +119,9 @@ def main() -> int:
                     return 1
             # Submit the jobs
             for urls in csv_table:
-                outdir_list.append([urls[0], urls[1], pcm.run_rslc_to_insar(urls[0], urls[1], args.dem, config=config)])
+                outdir_list.append([urls[0], urls[1],
+                    pcm.run_rslc_to_insar(urls[0], urls[1], args.dem, args.watermask, config=config)
+                ])
     # Write manifest
     manifest_log = os.path.join(os.getcwd(), 'log', f'{os.path.basename(__file__).split(".")[0]}_{start_time_str}.log')
     PCM.write_manifest(manifest_log, outdir_list, header='RSLC Data,INSAR Directory')

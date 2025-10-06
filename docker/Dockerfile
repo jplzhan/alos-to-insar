@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.5.2-devel-centos7
+FROM nvidia/cuda:12.8.1-devel-rockylinux8
 
 USER root
 
@@ -11,20 +11,14 @@ ENV HOME=/home/jovyan \
 RUN set -ex \
     && useradd -m -s /bin/bash -N -u 1006 -r -d /home/jovyan jovyan \
     && echo "jovyan ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
-    && yum clean all \
-    && sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
-    && sed -i s/^\#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
-    && sed -i s/^mirrorlist=http/\#mirrorlist=http/g /etc/yum.repos.d/*.repo \
     && yum update -y \
-    && yum install -y curl sudo less bzip2 zip unzip centos-release-scl-rh yum-utils which file make configure \
-                      autoconf ImageMagick openssh-clients httpd environment-modules emacs.x86_64 \
+    && yum install -y curl sudo less bzip2 zip unzip yum-utils which file make \
+                      autoconf openssh-clients httpd environment-modules \
     && yum clean all \
-    && sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
-    && sed -i s/^\#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
-    && sed -i s/^mirrorlist=http/\#mirrorlist=http/g /etc/yum.repos.d/*.repo \
     && yum install -y make.x86_64 \
     && echo 'skip_missing_names_on_install=False' >> /etc/yum.conf \
     && rm -rf /var/cache/yum \
+    && yum clean all \
     && curl -sSL https://github.com/conda-forge/miniforge/releases/download/24.7.1-0/Mambaforge-24.7.1-0-Linux-x86_64.sh -o miniconda.sh \
     && bash miniconda.sh -b -p /opt/conda \
     && rm miniconda.sh \
@@ -63,9 +57,9 @@ RUN set -ex \
     && git clone https://github.com/isce-framework/isce3.git \
     && mkdir $HOME/isce3/build \
     && cd $HOME/isce3/build \
-    && git checkout a965aac \
-    && cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
-    && make -j 4 install
+    && git checkout v0.25.3 \
+    && conda run -n isce3_src --live-stream cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
+    && conda run -n isce3_src --live-stream make -j 4 install
 
 ENV PYTHONPATH="${NOTEBOOK_PGE_DIR}:${ISCE3_BUILD_DIR}/packages:${PYTHONPATH}" \
     LD_LIBRARY_PATH="${ISCE3_BUILD_DIR}/lib64:${LD_LIBRARY_PATH}"

@@ -30,7 +30,7 @@ DEFAULT_BUCKET = {
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v2.0.3'
+DEFAULT_VERSION = 'v2.0.4'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -294,6 +294,7 @@ class PCM:
                           rslc_1: str,
                           rslc_2: str,
                           dem: str,
+                          watermask: str,
                           gpu_enabled: bool=True,
                           config: str='',
                           queue: str=None) -> str:
@@ -313,6 +314,7 @@ class PCM:
             'rslc_1': rslc_1,
             'rslc_2': rslc_2,
             'dem_s3_url': dem,
+            'watermask_s3_url': watermask,
             'gpu_enabled': '1' if gpu_enabled else '0',
             'insar_config': str(config),
             'timestamp': ts,

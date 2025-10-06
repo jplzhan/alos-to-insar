@@ -26,6 +26,10 @@
       "destination": "context"
     },
     {
+      "name": "watermask_s3_url",
+      "destination": "context"
+    },
+    {
       "name": "gpu_enabled",
       "destination": "context"
     },
