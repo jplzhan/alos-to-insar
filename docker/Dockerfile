@@ -57,7 +57,7 @@ RUN set -ex \
     && git clone https://github.com/isce-framework/isce3.git \
     && mkdir $HOME/isce3/build \
     && cd $HOME/isce3/build \
-    && git checkout 56a6be2 \
+    && git checkout ba6f0d6 \
     && conda run -n isce3_src --live-stream cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
     && conda run -n isce3_src --live-stream make -j 4 install
 
