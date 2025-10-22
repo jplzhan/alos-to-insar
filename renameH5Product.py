@@ -13,6 +13,8 @@ import h5py
 import os
 import argparse
 import shutil
+import boto3
+
 
 # Get filename function
 def filename_parse(input_file):
@@ -28,8 +30,32 @@ def filename_parse(input_file):
 
 # .h5 metadata extraction functions
 def openH5(input_h5product):
-    with h5py.File(input_h5product, 'r') as h5_obj:
-        return h5_obj
+    if not input_h5product.startswith('s3://'):
+        return h5py.File(input_h5product, 'r')
+
+    # Open via the cloud
+    driver = 'ros3'
+    cache = 2 * 1024**3
+    
+    # read the region from the environment
+    region = os.getenv('AWS_REGION', 'us-west-2')
+    # use boto3 to discover the implicit credentials
+    session = boto3.Session()
+    cred = session.get_credentials()
+    access = cred.access_key
+    secret = cred.secret_key
+    token = cred.token
+    return h5py.File(
+        name=input_h5product,
+        mode='r',
+        driver=driver,
+        page_buf_size=cache,
+        aws_region=region.encode(),
+        secret_id=access.encode(),
+        secret_key=secret.encode(),
+        session_token=token.encode(),
+    )
+        
     
 # Function to search .h5 object for specified object name and return value
 def search_object(h5_obj, target_object):
@@ -67,35 +93,17 @@ def search_object(h5_obj, target_object):
                 objectValue = h5_obj[()]
                 print(f"Value of objectValue: {objectValue}")
                 objectStrValue = f"{objectValue}"
-                return objectStrValue            
+                return objectStrValue
 
-# Entry point of execution
 
-if __name__ == "__main__":
-    # Parses the command line arguments.
-     
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-    parser.add_argument('-f', '--file', required=True, help='Input .h5 file')
-    parser.add_argument('-o', '--output', required=True, help='The output path of where renamed files should be placed. Make sure to include "/" at end of path. Example: /home/jovyan/output/')
-
-    args = parser.parse_args()
+def infer_nisar_filename(input_file: str) -> str:
+    """Infers the NISAR convention file name of the given file.
     
-
-    input_file = args.file
-    renamed_path = args.output
-    print("input_file::main:input_met {}".format(input_file))
-    print("output_path::main:renamed_path {}".format(renamed_path))
-    
-
-    # Specify the input and output filenames
-    #input_file = '/Users/jpon/Documents/Projects/GIT/nisar-DataTools/DAAC_Ondemand_Reformat/RSLC/input/Renamed_to_NISAR/ALPSRP274410710-L1.0.h5'  # Update with your HDF5 file path
-    #renamed_path ='/Users/jpon/Documents/Projects/GIT/nisar-DataTools/DAAC_Ondemand_Reformat/GUNW/Output/'
-
-    
-    with h5py.File(input_file, 'r') as h5_obj:
+    Accepts either a local path or an S3 URL.
+    """
+    try:
+        h5_obj = openH5(input_file)
+        
         # Attempt to infer frame number
         try:
             param_frame_number = search_object(h5_obj, "frameNumber")
@@ -214,14 +222,67 @@ if __name__ == "__main__":
                 + "_" + "J" \
                 + "_" + "888" \
                 + ".h5")
-                
-    try:
-        shutil.copy2(input_file, renamed_path + new_filename)
-        print(f"File '{input_file}' renamed to '{new_filename}' successfully.")
-    except FileNotFoundError:
-        print(f"File '{input_file}' not found.")
-    except FileExistsError:
-        print(f"File '{new_filename}' already exists.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    finally:
+        h5_obj.close()
+
+    return new_filename
+
+
+
+def main():
+    # Parses the command line arguments.
+     
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('-f', '--file', required=True, help='Input .h5 file')
+    parser.add_argument('-d', '--debug',
+                        required=False,
+                        action='store_true',
+                        help='Will not rename the file but instead just give a preview of what would be done.')
+    parser.add_argument('-o', '--output', required=True, help='The output path of where renamed files should be placed. Make sure to include "/" at end of path. Example: /home/jovyan/output/')
+
+    args = parser.parse_args()
+    
+
+    input_file = args.file
+    renamed_path = args.output
+    print("input_file::main:input_met {}".format(input_file))
+    print("output_path::main:renamed_path {}".format(renamed_path))
+    
+
+    # Specify the input and output filenames
+    #input_file = '/Users/jpon/Documents/Projects/GIT/nisar-DataTools/DAAC_Ondemand_Reformat/RSLC/input/Renamed_to_NISAR/ALPSRP274410710-L1.0.h5'  # Update with your HDF5 file path
+    #renamed_path ='/Users/jpon/Documents/Projects/GIT/nisar-DataTools/DAAC_Ondemand_Reformat/GUNW/Output/'
+
+    new_filename = infer_nisar_filename(input_file)
+
+    if not args.debug:
+        try:
+            shutil.copy2(input_file, renamed_path + new_filename)
+            print(f"File '{input_file}' renamed to '{new_filename}' successfully.")
+        except FileNotFoundError:
+            print(f"File '{input_file}' not found.")
+        except FileExistsError:
+            print(f"File '{new_filename}' already exists.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+    else:
+        print("===================================================================\n")
+        print(f"Source Filename:\n"
+              f"  - {input_file}")
+        print(f"Inferred NISAR Filename:\n"
+              f"  - {new_filename}")
+        print(f"Final destination:\n"
+              f"  - {renamed_path + new_filename}\n")
+
+
+
+# Entry point of execution
+
+if __name__ == "__main__":
+    main()
+
+    
    

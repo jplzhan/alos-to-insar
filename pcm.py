@@ -20,6 +20,7 @@ import otello
 
 import notebook_pges.isce3_regex as isce3_regex
 from notebook_pges.aws_uploader import AWS
+import renameH5Product
 
 
 # Default settings
@@ -355,3 +356,25 @@ class PCM:
                 f.write(item[0])
                 for i in range(1, len(item)):
                     f.write(f',{item[i]}')
+
+
+    @staticmethod
+    def copy_with_nisar_filenames(outdir: str, destdir: str):
+        """Copies all .h5 files into a directory with their inferred
+        nisar filenames to a destination directory.
+        """
+        parsed_outdir = urlparse(outdir)
+        out_bucket = parsed_outdir.netloc
+        out_path = parsed_outdir.path
+
+        if out_path.startswith('/'):
+            out_path = path[1:]
+
+        for partial_s3_path in AWS.list_s3(out_bucket, out_path):
+            if not partial_s3_path.endswith('.h5'):
+                continue
+            full_s3_path = f's3://{out_bucket}/{partial_s3_path}'
+            dest_fname = renameH5Product.infer_nisar_filename(full_s3_path)
+            subprocess.run(f'aws s3 cp {full_s3_path} {args.output_bucket}/{dest_fname}', shell=True, check=True)
+
+
