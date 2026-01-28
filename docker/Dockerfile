@@ -24,7 +24,6 @@ RUN set -ex \
     && rm miniconda.sh \
     && touch /opt/conda/conda-meta/pinned \
     && mamba install -y git \
-    && mamba config --set show_channel_urls True \
     && mamba init bash
 
 # copy your repo into the docker container
