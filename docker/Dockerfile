@@ -46,9 +46,10 @@ RUN set -ex \
     && cd $HOME \
     && mamba install -y -c conda-forge nb_conda_kernels \
     && git clone https://github.com/hysds/notebook_pge_wrapper.git \
-    && cd notebook_pge_wrapper \
-    && pip install -e . \
     && mamba create --file $HOME/isce3/tools/imagesets/oracle8conda/dev/spec-file.txt -n isce3_src \
+    && mamba run -n isce3_src mamba install -c conda-forge --yes ipykernel papermill \
+    && cd notebook_pge_wrapper \
+    && mamba run -n isce3_src pip install -e . \
     && mamba run -n isce3_src python -m ipykernel install --user --name isce3_src --display-name "isce3_src"
 
 SHELL ["mamba", "run", "-n", "isce3_src", "/bin/bash", "-c"]
