@@ -171,7 +171,9 @@ def download_dem(url: str, dl_dir: str) -> str:
             raise ValueError(f'Failed to download {tiff_f}!')
         return tiff_f
     except Exception as e:
-        print(f'Exception caught while downloading DEM/Watermask Data from S3: {e}')
+        msg = f'Exception caught while downloading DEM/Watermask Data from S3: {e}'
+        print(msg)
+        raise RuntimeError(msg)
 
 def write_focus_config(template: dict, target_path: str, dem: str, yml_path: str, gpu_enabled: bool, outfile: str):
     """Writes a focus.py runconfig with the specified target path."""

@@ -35,6 +35,15 @@ def main() -> int:
         type=str,
         help='Run config file for running focus.py.',
     )
+    parser.add_argument(
+        '-n',
+        '--no-rename',
+        dest='no_rename',
+        action='store_true',
+        required=False,
+        help='If specified, the files will not be automatically renamed to'
+            'NISAR file convention by the renaming script and will retain a very pendantic name instead.',
+    )
     # parser.add_argument(
     #     '-d',
     #     '--dem',
@@ -87,7 +96,14 @@ def main() -> int:
     # Copy results to the specified output bucket
     for link, outdir in outdir_list:
         logger.info(f'Copying results for {link} -> {outdir} -> {args.output_bucket}')
-        subprocess.run(f'aws s3 cp --recursive {outdir}/ {args.output_bucket}/ --exclude "*" --include "*.h5"', shell=True, check=True)
+
+        # If the no-renaming argument is specified, just copy the files blindly
+        if args.no_rename:
+            subprocess.run(f'aws s3 cp --recursive {outdir}/ {args.output_bucket}/ --exclude "*" --include "*.h5"', shell=True, check=True)
+            continue
+
+        # Otherwise, list the contents and use HDf5 cloud-optimized access to infer the NISAR filenames
+        pcm.copy_with_nisar_filenames(outdir, args.output_bucket)
     
     return 0
 

@@ -6,21 +6,28 @@
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "s3://nisar-adt-cc-ondemand/ALOS-1-data/RSLC/ALPSRP267700710-L1.0.h5"
+      "default": "s3://nisar-st-data-ondemand/ALOS-1-data/RSLC/ALPSRP118456700-L1.0.h5"
     },
     {
       "name": "rslc_2",
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "s3://nisar-adt-cc-ondemand/ALOS-1-data/RSLC/ALPSRP274410710-L1.0.h5"
+      "default": "s3://nisar-st-data-ondemand/ALOS-1-data/RSLC/ALPSRP224230660-L1.0.h5"
     },
     {
       "name": "dem_s3_url",
       "from": "submitter",
       "type": "text",
       "description": "string",
-      "default": "s3://nisar-adt-cc-ondemand/DEM-static/dem.tiff"
+      "default": "s3://nisar-st-data-ondemand/DEM-static/dem_Chile.tiff"
+    },
+    {
+      "name": "watermask_s3_url",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": ""
     },
     {
       "name": "gpu_enabled",

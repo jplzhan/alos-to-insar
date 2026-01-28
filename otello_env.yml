@@ -1,0 +1,22 @@
+name: /home/jovyan/otello/.conda
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - utm
+  - ca-certificates
+  - openssl
+  - numpy
+  - botocore
+  - cycler
+  - isce3
+  - matplotlib
+  - pillow
+  - ruamel.yaml
+  - setuptools
+  - shapely
+  - libsqlite
+  - sqlite
+  - h5py[version='>=3.14']
+  - certifi
+prefix: /home/jovyan/otello/.conda
