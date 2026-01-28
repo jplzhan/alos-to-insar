@@ -60,8 +60,8 @@ ENV CUDAHOSTCXX=x86_64-conda-linux-gnu-g++ \
 
 RUN set -ex \
     && cd $HOME/isce3/build \
-    && conda run -n isce3_src --live-stream cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
-    && conda run -n isce3_src --live-stream make -j 4 install
+    && cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
+    && make -j 4 install
 
 ENV PYTHONPATH="${NOTEBOOK_PGE_DIR}:${ISCE3_BUILD_DIR}/packages:${PYTHONPATH}" \
     LD_LIBRARY_PATH="${ISCE3_BUILD_DIR}/lib64:${LD_LIBRARY_PATH}"
