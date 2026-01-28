@@ -68,7 +68,7 @@ ENV PYTHONPATH="${NOTEBOOK_PGE_DIR}:${ISCE3_BUILD_DIR}/packages:${PYTHONPATH}" \
 
 # Fix permissions isues with loading up the bash profile and home profile, .cache folder, and everything else
 RUN chmod 777 /home/jovyan/.bash_profile
-RUN chmod 777 /home/jovyan/.cache
+RUN mkdir -p /home/jovyan/.cache && chmod 777 /home/jovyan/.cache
 RUN chmod -R 777 /home/jovyan
 
 CMD ["/bin/bash", "--login"]
