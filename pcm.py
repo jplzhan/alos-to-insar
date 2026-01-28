@@ -31,7 +31,7 @@ DEFAULT_BUCKET = {
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v2.0.4'
+DEFAULT_VERSION = 'v3.0.0'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -370,6 +370,31 @@ class PCM:
             timestamp=ts)
         ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
         logger.info(f'Submitting static workflow job... (storage: {ret})')
+        self.job_set.append(jt.submit_job(queue=queue))
+        self.num_jobs += 1
+        return ret
+
+    def run_test_local_dem(self,
+                           track: int,
+                           frame: int,
+                           queue: str='nisar-job_worker-onprem') -> str:
+        """Tests mounting a local DEM archive.
+
+        Input Parameters:
+            - track: int
+            - frame: int
+        """
+        ts, folder = self.get_str_time()
+        jt = self.get_job('test_local_dem')
+        jt.set_input_params({
+            'track': track,
+            'frame': frame,
+        })
+        ret = isce3_regex.RSLC_FORMAT.format(
+            polarization=NON_INSAR_POLARIZATION,
+            timestamp=ts)
+        ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
+        logger.info(f'Submitting test DEM archive job... (storage: {ret})')
         self.job_set.append(jt.submit_job(queue=queue))
         self.num_jobs += 1
         return ret

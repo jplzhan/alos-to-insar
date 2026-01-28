@@ -2,7 +2,7 @@
   "command": "notebook-pge-wrapper execute /home/jovyan/alos-to-insar/notebook_pges/rslc_to_insar.ipynb",
   "time_limit": 172800,
   "soft_time_limit": 172800,
-  "disk_usage": "60GB",
+  "disk_usage": "100GB",
   "runtime_options": {
     "gpus": "all"
   },

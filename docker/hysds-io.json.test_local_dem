@@ -1,0 +1,21 @@
+{
+  "submission_type": "iteration",
+  "params": [
+    {
+      "name": "track",
+      "from": "submitter",
+      "type": "text",
+      "description": "int",
+      "default": "1"
+    },
+    {
+      "name": "frame",
+      "from": "submitter",
+      "type": "text",
+      "description": "int",
+      "default": "5"
+    }
+  ],
+  "component": "tosca",
+  "label": "Test DEM Archive PGE"
+}

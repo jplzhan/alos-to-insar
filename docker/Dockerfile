@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.8.1-devel-rockylinux8
+FROM nvidia/cuda:12.8.1-devel-oraclelinux9
 
 USER root
 
@@ -23,7 +23,6 @@ RUN set -ex \
     && bash miniconda.sh -b -p /opt/conda \
     && rm miniconda.sh \
     && touch /opt/conda/conda-meta/pinned \
-    && mamba install -c conda-forge conda=23.10 \
     && mamba install -y git \
     && mamba config --set show_channel_urls True \
     && mamba init bash
@@ -39,11 +38,18 @@ SHELL ["mamba", "run", "-n", "base", "/bin/bash", "-c"]
 
 RUN set -ex \
     && cd $HOME \
+    && git clone https://github.com/isce-framework/isce3.git \
+    && mkdir $HOME/isce3/build \
+    && cd $HOME/isce3/build \
+    && git checkout v0.25.7
+
+RUN set -ex \
+    && cd $HOME \
     && mamba install -y -c conda-forge nb_conda_kernels \
     && git clone https://github.com/hysds/notebook_pge_wrapper.git \
     && cd notebook_pge_wrapper \
     && pip install -e . \
-    && mamba env create -f $HOME/alos-to-insar/environment.yml -n isce3_src \
+    && mamba env create --file $HOME/isce3/tools/imagesets/oracle8conda/dev/spec-file.txt -n isce3_src \
     && mamba run -n isce3_src python -m ipykernel install --user --name isce3_src --display-name "isce3_src"
 
 SHELL ["mamba", "run", "-n", "isce3_src", "/bin/bash", "-c"]
@@ -53,11 +59,7 @@ ENV CUDAHOSTCXX=x86_64-conda-linux-gnu-g++ \
     CXX=x86_64-conda-linux-gnu-g++
 
 RUN set -ex \
-    && cd $HOME \
-    && git clone https://github.com/isce-framework/isce3.git \
-    && mkdir $HOME/isce3/build \
     && cd $HOME/isce3/build \
-    && git checkout v0.25.7 \
     && conda run -n isce3_src --live-stream cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_BUILD_DIR}" $HOME/isce3/ \
     && conda run -n isce3_src --live-stream make -j 4 install
 

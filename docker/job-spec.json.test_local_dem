@@ -1,0 +1,23 @@
+{
+  "command": "notebook-pge-wrapper execute /home/jovyan/alos-to-insar/notebook_pges/test_local_dem.ipynb",
+  "time_limit": 172800,
+  "soft_time_limit": 172800,
+  "disk_usage": "200GB",
+  "required_queues": [
+    "factotum-job_worker-small"
+  ],
+  "imported_worker_files": {
+    "$HOME/.aws": "/home/jovyan/.aws",
+    "$HOME/dem_archive": "/home/jovyan/dem_archive"
+  },
+  "params": [
+    {
+      "name": "track",
+      "destination": "context"
+    },
+    {
+      "name": "frame",
+      "destination": "context"
+    }
+  ]
+}

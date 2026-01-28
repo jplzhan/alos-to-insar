@@ -14,6 +14,10 @@ templates/.ipynb_checkpoints/*
 NISAR_L*_*_*
 
 log/*
+*/.ipynb_checkpoints/*
 .ipynb_checkpoints/*
 __pycache__/*
 qa/*
+*/downloads/*
+*/output/*
+*/__pycache__/*
