@@ -15,11 +15,65 @@ import numpy as np
 from osgeo import gdal
 from urllib.parse import urlparse
 from dataclasses import dataclass
+from pyproj import CRS, Transformer
 
 from isce3_regex import *
 
 
 gdal.UseExceptions()
+
+
+def convert_coordinates(
+        from_epsg: str,
+        to_epsg: str,
+        x_coord: float,
+        y_coord: float) -> tuple:
+    """
+    Converts a single coordinate pair from a source EPSG to a target EPSG.
+
+    Args:
+        from_epsg (str): The EPSG code of the source coordinate system (e.g., 'EPSG:32643').
+        to_epsg (str): The EPSG code of the target coordinate system (e.g., 'EPSG:4326').
+        x_coord (float): The x-coordinate (Easting in meters for UTM).
+        y_coord (float): The y-coordinate (Northing in meters for UTM).
+
+    Returns:
+        tuple: A tuple containing the transformed coordinates (latitude, longitude).
+    """
+    # 1. Define the source and target coordinate reference systems (CRS)
+    source_crs = CRS.from_string(from_epsg)
+    target_crs = CRS.from_string(to_epsg)
+
+    # 2. Create a transformer object to perform the conversion
+    # The 'always_xy=True' ensures the output is in (longitude, latitude) order
+    # for geographic coordinates, which is a common convention.
+    transformer = Transformer.from_crs(source_crs, target_crs, always_xy=True)
+
+    # 3. Perform the transformation
+    # The transform method takes x and y coordinates
+    lon, lat = transformer.transform(x_coord, y_coord)
+
+    # x and y
+    return lon, lat
+
+
+def remove_file_if_exists(filepath: str):
+    """
+    Checks if a file exists at the given path and removes it if it does.
+
+    Args:
+        filepath (str): The path to the file.
+    """
+    try:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+            print(f'Successfully removed file: {filepath}')
+        else:
+            print(f'File does not exist, no action taken: {filepath}')
+    except OSError as e:
+        # This catches errors like permission denied
+        print(f'Error removing file {filepath}: {e}')
+        raise e
 
 
 def download_alos_data(urls: list, dl_dir: str, dest_dir: str) -> list:
@@ -59,8 +113,10 @@ def download_alos_s3_data(url: str, dl_dir: str, dest_dir: str) -> str:
             print(f'{zip_f} already exists, skipping download...')
         os.chdir(dest_dir)
         extract_dir = os.path.join(dest_dir, os.path.basename(os.path.splitext(zip_f)[0]))
+        print(f"now trying to unzip {zip_f} -> {extract_dir}")
         with zipfile.ZipFile(zip_f, 'r') as zip_ref:
             zip_ref.extractall(dest_dir)
+        print(f"checkpoint...")
         os.chdir(current_dir)
         if os.path.isdir(extract_dir):
             print('Extracted:', extract_dir)
@@ -183,6 +239,24 @@ def write_gcov_config(template: dict, target_path: str, dem: str, yml_path: str,
 
     with open(yml_path, 'w', encoding='utf-8') as f:
         yaml.dump(template, f, default_flow_style=False)
+
+def write_static_config(template: dict, dem_vrt: str, watermask_vrt: str, yml_path: str):
+    """Writes a static.py runconfig with the specified target path."""
+    os.makedirs(os.path.dirname(yml_path), exist_ok=True)
+
+    template['runconfig']['groups']['dynamic_ancillary_file_group']['dem_raster_file'] = dem_vrt
+    template['runconfig']['groups']['dynamic_ancillary_file_group']['water_mask_raster_file'] = watermask_vrt
+    template['runconfig']['groups']['dynamic_ancillary_file_group']['orbit_xml_file'] = os.path.join(os.path.dirname(yml_path), 'orbit_final.xml')
+    template['runconfig']['groups']['dynamic_ancillary_file_group']['pointing_xml_file'] = os.path.join(os.path.dirname(yml_path), 'pointing_final.xml')
+
+    posting_x = template['runconfig']['groups']['processing']['geo_grid']['posting']['x']
+    posting_y = template['runconfig']['groups']['processing']['geo_grid']['posting']['y']
+    if 'rtc' not in template['runconfig']['groups']['processing']:
+        template['runconfig']['groups']['processing']['rtc'] = {}
+    template['runconfig']['groups']['processing']['rtc']['dem_upsample_factor'] = 1 if (posting_x < 20 and posting_y < 20) else 2
+    
+    with open(yml_path, 'w', encoding='utf-8') as f:
+        yaml.dump(template, f, default_flow_style=False)
         
 def prepend_env_var(env_var: str, val: str) -> str:
     """Prepends a value to an environment variable without crashing."""
@@ -200,6 +274,29 @@ class BoundingBox:
     south: float = 0
     east: float = 0
     north: float = 0
+
+    @staticmethod
+    def load_from_geogrid(geo_grid: dict) -> object:
+        """Reads in a geo_grid dict from a config and creates a bounding box object."""
+        from_epsg = f'EPSG:{geo_grid["epsg"]}'
+        top_left_x = geo_grid['top_left']['x']
+        top_left_y = geo_grid['top_left']['y']
+        btm_right_x = geo_grid['bottom_right']['x']
+        btm_right_y = geo_grid['bottom_right']['y']
+
+        target_epsg = 'EPSG:4326'
+        west, north = convert_coordinates(
+            from_epsg, target_epsg, top_left_x, top_left_y)
+        east, south = convert_coordinates(
+            from_epsg, target_epsg, btm_right_x, btm_right_y)
+        
+        ret = BoundingBox(
+            west=west,
+            south=south,
+            east=east,
+            north=north
+        )
+        return ret
 
 
 class h5parse:

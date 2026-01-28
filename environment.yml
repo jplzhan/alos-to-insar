@@ -383,5 +383,5 @@ variables:
   CC: x86_64-conda-linux-gnu-gcc
   CXX: x86_64-conda-linux-gnu-g++
   PYTHONPATH: '/home/jovyan/isce3/build/packages:'
-  LD_LIBRARY_PATH: /home/jovyan/isce3/build/lib64:/opt/conda/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/lib64
+  LD_LIBRARY_PATH: /home/jovyan/isce3/build/lib64:/opt/conda/lib:/usr/local/cuda/lib64
 prefix: /home/jovyan/.local/envs/isce3_src

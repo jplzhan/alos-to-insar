@@ -73,6 +73,7 @@ class PCM:
             'rslc_to_gslc': None,
             'rslc_to_gcov': None,
             'rslc_to_insar': None,
+            'static_workflow': None,
         }
         
     def build_pcm(self, tick_rate:float=DEFAULT_BUILD_TICK_SECONDS, rebuild: bool=False):
@@ -331,10 +332,51 @@ class PCM:
         self.job_set.append(jt.submit_job(queue=queue_final))
         self.num_jobs += 1
         return ret
+
+    def run_static_workflow(self,
+                            orbit_xml: str,
+                            pointing_xml: str,
+                            dem: str,
+                            watermask: str,
+                            dem_margin: float,
+                            watermask_margin: float,
+                            config: str='',
+                            #queue: str='nisar-job_worker-sciflo-gcov') -> str:
+                            queue: str='nisar-job_worker-large') -> str:
+        """Runs Static Workflow.
+        
+        Input Parameters:
+            - orbit_xml: Raw text of the orbit XML file.
+            - pointing_xml: Raw text of the pointing XML file.
+            - dem: S3 URL to the DEM to be processed.
+            - watermask: S3 URL to the Watermask to be processed.
+            - config: YAML formatted string containing the config to pass to focus.py.
+            - queue: Name of the PCM queue to submit the job to (recommended is default).
+        """
+        ts, folder = self.get_str_time()
+        jt = self.get_job('static_workflow')
+        jt.set_input_params({
+            'dem_vrt_s3_url': dem,
+            'watermask_vrt_s3_url': watermask,
+            'dem_margin': dem_margin,
+            'watermask_margin': watermask_margin,
+            'orbit_xml': str(orbit_xml),
+            'pointing_xml': str(pointing_xml),
+            'config_yml': str(config),
+            'timestamp': ts,
+        })
+        ret = isce3_regex.RSLC_FORMAT.format(
+            polarization=NON_INSAR_POLARIZATION,
+            timestamp=ts)
+        ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
+        logger.info(f'Submitting static workflow job... (storage: {ret})')
+        self.job_set.append(jt.submit_job(queue=queue))
+        self.num_jobs += 1
+        return ret
         
     def get_job(self, job_name: str):
         """Gets the listed job type from Mozart and initializes it."""
-        if self.jobs[job_name] is None:
+        if self.jobs.get(job_name) is None:
             full_job_name = f'job-{job_name}:{self.version}'
             jt = self.mozart.get_job_type(full_job_name)
             jt.initialize()
