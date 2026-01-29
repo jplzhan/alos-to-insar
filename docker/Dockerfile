@@ -1,5 +1,5 @@
 # ==============================================================================
-# STAGE 1: Builder
+# STAGE 1: Builder (Compiles ISCE3, Setups Envs)
 # ==============================================================================
 FROM nvidia/cuda:12.8.1-devel-oraclelinux9 AS builder
 
@@ -29,20 +29,30 @@ WORKDIR $HOME
 # 3. Clone ISCE3 (Source for spec-file and build)
 RUN git clone --depth 1 --branch v0.25.7 https://github.com/isce-framework/isce3.git
 
-# 4. Create Environment & Install Compilers
-# FIX: Added gxx_linux-64 gcc_linux-64 to ensure the compiler vars work
+# 4. Create Environments & Install Dependencies (IN BOTH ENVS)
 RUN set -ex \
-    && mamba install -y -c conda-forge nb_conda_kernels git cmake make \
+    # A. Install dependencies into BASE
+    && mamba install -n base -y -c conda-forge \
+       nb_conda_kernels \
+       ipykernel \
+       papermill \
+       git cmake make \
+    # B. Create ISCE3_SRC environment
     && mamba create -y --file $HOME/isce3/tools/imagesets/oracle8conda/dev/spec-file.txt -n isce3_src \
+    # C. Install dependencies into ISCE3_SRC
     && mamba install -n isce3_src -c conda-forge --yes \
        ipykernel \
        papermill \
+       gxx_linux-64 \
+       gcc_linux-64 \
+       cmake \
+       make \
     && mamba clean --all -f -y
 
 # 5. Build ISCE3
+# We use the compilers we just installed in isce3_src
 SHELL ["mamba", "run", "-n", "isce3_src", "/bin/bash", "-c"]
 
-# These variables tell CMake to use the Conda compilers we just installed
 ENV CUDAHOSTCXX=x86_64-conda-linux-gnu-g++ \
     CC=x86_64-conda-linux-gnu-gcc \
     CXX=x86_64-conda-linux-gnu-g++
@@ -53,12 +63,17 @@ RUN set -ex \
     && cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_INSTALL_DIR}" -DCMAKE_BUILD_TYPE=Release .. \
     && make -j 4 install
 
-# 6. Install Notebook Wrapper
+# 6. Install Notebook Wrapper (IN BOTH ENVS)
+# We use a single RUN command to handle both installs to save layers
 RUN set -ex \
     && git clone https://github.com/hysds/notebook_pge_wrapper.git $HOME/notebook_pge_wrapper \
     && cd $HOME/notebook_pge_wrapper \
-    && pip install . \
-    && python -m ipykernel install --user --name isce3_src --display-name "isce3_src"
+    # Install in BASE
+    && mamba run -n base pip install . \
+    # Install in ISCE3_SRC
+    && mamba run -n isce3_src pip install . \
+    # Register kernel for isce3_src
+    && mamba run -n isce3_src python -m ipykernel install --user --name isce3_src --display-name "isce3_src"
 
 
 # ==============================================================================
@@ -84,6 +99,7 @@ RUN set -ex \
     && rm -rf /var/cache/yum
 
 # 2. COPY Artifacts from Builder
+# This copies BOTH environments (base and isce3_src) because they live inside /opt/conda
 COPY --from=builder /opt/conda /opt/conda
 COPY --from=builder /opt/isce3 /opt/isce3
 COPY --from=builder /home/jovyan/.local /home/jovyan/.local
