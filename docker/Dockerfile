@@ -109,7 +109,7 @@ COPY . $HOME/alos-to-insar
 
 # 4. Final Permissions and Env
 RUN chown -R jovyan:users $HOME \
-    && chmod 777 $HOME/alos-to-insar \
+    && chmod -R 777 $HOME \
     && echo ". /opt/conda/etc/profile.d/conda.sh" >> $HOME/.bash_profile \
     && echo "conda activate isce3_src" >> $HOME/.bash_profile \
     && mkdir -p $HOME/.cache && chmod 777 $HOME/.cache
