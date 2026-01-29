@@ -1,19 +1,16 @@
 # ==============================================================================
 # STAGE 1: Builder
-# Use the 'devel' image to get NVCC, GCC, CMake, and headers.
 # ==============================================================================
 FROM nvidia/cuda:12.8.1-devel-oraclelinux9 AS builder
 
 USER root
 
-# Define installation paths
 ENV HOME=/home/jovyan \
     CONDA_DIR=/opt/conda \
     PATH=/opt/conda/bin:$PATH \
-    # We install ISCE3 here, separate from the source code
     ISCE3_INSTALL_DIR=/opt/isce3
 
-# 1. Install Build Dependencies
+# 1. Install System Build Dependencies
 RUN set -ex \
     && yum update -y \
     && yum install -y curl bzip2 zip unzip yum-utils which file make \
@@ -27,39 +24,36 @@ RUN curl -sSL https://github.com/conda-forge/miniforge/releases/download/24.7.1-
     && rm miniconda.sh \
     && mamba init bash
 
-# 3. Create Conda Environment
-# We copy the spec file first to leverage Docker caching
-COPY . $HOME/alos-to-insar
 WORKDIR $HOME
 
+# 3. Clone ISCE3 (Source for spec-file and build)
+RUN git clone --depth 1 --branch v0.25.7 https://github.com/isce-framework/isce3.git
+
+# 4. Create Environment & Install Compilers
+# FIX: Added gxx_linux-64 gcc_linux-64 to ensure the compiler vars work
 RUN set -ex \
     && mamba install -y -c conda-forge nb_conda_kernels git cmake make \
-    # Create the environment "isce3_src"
-    && mamba create -y --file $HOME/alos-to-insar/docker/spec-file.txt -n isce3_src || \
-       (echo "Warning: Assuming spec-file location from context, adjust if needed" && \
-        mamba create -y -n isce3_src -c conda-forge ipykernel papermill) \
-    # Install additional deps if not in spec file
-    && mamba install -n isce3_src -c conda-forge --yes ipykernel papermill \
-    # CLEANUP: Remove cached tarballs to save space in the copy
+    && mamba create -y --file $HOME/isce3/tools/imagesets/oracle8conda/dev/spec-file.txt -n isce3_src \
+    && mamba install -n isce3_src -c conda-forge --yes \
+       ipykernel \
+       papermill \
     && mamba clean --all -f -y
 
-# 4. Build ISCE3 with NVCC
-# Activate conda env for the build
+# 5. Build ISCE3
 SHELL ["mamba", "run", "-n", "isce3_src", "/bin/bash", "-c"]
 
+# These variables tell CMake to use the Conda compilers we just installed
 ENV CUDAHOSTCXX=x86_64-conda-linux-gnu-g++ \
     CC=x86_64-conda-linux-gnu-gcc \
     CXX=x86_64-conda-linux-gnu-g++
 
 RUN set -ex \
-    && git clone --depth 1 --branch v0.25.7 https://github.com/isce-framework/isce3.git $HOME/isce3_src \
-    && mkdir -p $HOME/isce3_src/build \
-    && cd $HOME/isce3_src/build \
-    # IMPORTANT: We install to /opt/isce3 (ISCE3_INSTALL_DIR)
+    && mkdir -p $HOME/isce3/build \
+    && cd $HOME/isce3/build \
     && cmake -DCMAKE_INSTALL_PREFIX="${ISCE3_INSTALL_DIR}" -DCMAKE_BUILD_TYPE=Release .. \
     && make -j 4 install
 
-# 5. Install Notebook Wrapper
+# 6. Install Notebook Wrapper
 RUN set -ex \
     && git clone https://github.com/hysds/notebook_pge_wrapper.git $HOME/notebook_pge_wrapper \
     && cd $HOME/notebook_pge_wrapper \
@@ -69,7 +63,6 @@ RUN set -ex \
 
 # ==============================================================================
 # STAGE 2: Final Runtime
-# Use 'runtime' image. Contains CUDA shared libraries but NO compiler (nvcc).
 # ==============================================================================
 FROM nvidia/cuda:12.8.1-runtime-oraclelinux9
 
@@ -81,8 +74,7 @@ ENV HOME=/home/jovyan \
     ISCE3_INSTALL_DIR=/opt/isce3 \
     NOTEBOOK_PGE_DIR=/home/jovyan/alos-to-insar/notebook_pges
 
-# 1. Setup User and Minimal Runtime Dependencies
-# We only install what is needed to RUN the code (git, curl, etc), not build it.
+# 1. Setup User and Runtime Deps
 RUN set -ex \
     && useradd -m -s /bin/bash -N -u 1006 -r -d /home/jovyan jovyan \
     && echo "jovyan ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
@@ -92,24 +84,20 @@ RUN set -ex \
     && rm -rf /var/cache/yum
 
 # 2. COPY Artifacts from Builder
-# Copy the completely built Conda environment
 COPY --from=builder /opt/conda /opt/conda
-# Copy the compiled ISCE3 binaries/libs (Clean of source code and .o files)
 COPY --from=builder /opt/isce3 /opt/isce3
-# Copy the Jupyter kernels
 COPY --from=builder /home/jovyan/.local /home/jovyan/.local
 
 # 3. Copy Application Code
 COPY . $HOME/alos-to-insar
 
-# 4. Final Permissions and Env Setup
+# 4. Final Permissions and Env
 RUN chown -R jovyan:users $HOME \
     && chmod 777 $HOME/alos-to-insar \
     && echo ". /opt/conda/etc/profile.d/conda.sh" >> $HOME/.bash_profile \
     && echo "conda activate isce3_src" >> $HOME/.bash_profile \
     && mkdir -p $HOME/.cache && chmod 777 $HOME/.cache
 
-# Point Python and Linker to the custom install location
 ENV PYTHONPATH="${NOTEBOOK_PGE_DIR}:${ISCE3_INSTALL_DIR}/packages:${PYTHONPATH}" \
     LD_LIBRARY_PATH="${ISCE3_INSTALL_DIR}/lib64:${LD_LIBRARY_PATH}"
 
