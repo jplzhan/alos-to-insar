@@ -85,6 +85,15 @@ def main() -> int:
     parser.add_argument('-c', '--config', 
                         default=default_template_path,
                         help=f"Path to template YAML file. Defaults to: {default_template_path}")
+    parser.add_argument(
+        '-o'
+        '--output-bucket',
+        dest='output_bucket',
+        action='store',
+        required=False,
+        type=str,
+        help='S3 URL to where the RSLC results will be uploaded.',
+    )
     
     parser.add_argument('--posting', type=float, help="Global posting value override (optional)")
     
@@ -113,7 +122,7 @@ def main() -> int:
 
     # Submit jobs
     for config_args in config_list:
-        outdir_list.append([(config_args['track'], config_args['frame']), pcm.run_static_layers_on_prem(**config_args)])
+        outdir_list.append([(config_args['track'], config_args['frame']), pcm.run_static_layers_onprem(**config_args)])
 
     # Write manifest
     manifest_log = os.path.join(os.getcwd(), 'log', f'{os.path.basename(__file__).split(".")[0]}_{start_time_str}.log')

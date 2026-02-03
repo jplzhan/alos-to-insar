@@ -33,7 +33,7 @@ DEFAULT_BUCKET = {
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v3.0.2'
+DEFAULT_VERSION = 'v3.0.3'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -76,6 +76,7 @@ class PCM:
             'rslc_to_gcov': None,
             'rslc_to_insar': None,
             'static_workflow': None,
+            'static_layers_onprem': None,
         }
         
     def build_pcm(self, tick_rate:float=DEFAULT_BUILD_TICK_SECONDS, rebuild: bool=False):
@@ -376,13 +377,13 @@ class PCM:
         self.num_jobs += 1
         return ret
 
-    def run_static_layer_onprem(self,
-                                track: int,
-                                frame: int,
-                                orbit_xml: str,
-                                pointing_xml: str,
-                                config: str='',
-                                queue: str='nisar-job_worker-onprem') -> str:
+    def run_static_layers_onprem(self,
+                                 track: int,
+                                 frame: int,
+                                 orbit_xml: str,
+                                 pointing_xml: str,
+                                 config: str='',
+                                 queue: str='nisar-job_worker-onprem') -> str:
         """Runs Static Workflow on-premise..
         
         Input Parameters:
@@ -394,7 +395,7 @@ class PCM:
             - queue: Name of the PCM queue to submit the job to (recommended is default).
         """
         ts, folder = self.get_str_time()
-        jt = self.get_job('static_workflow')
+        jt = self.get_job('static_layers_onprem')
         jt.set_input_params({
             'track': track,
             'frame': frame,
