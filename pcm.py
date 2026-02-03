@@ -15,6 +15,8 @@ from botocore import UNSIGNED
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from datetime import datetime, timezone, timedelta
+from multiprocessing import Pool, cpu_count
+from functools import partial
 
 import otello
 
@@ -31,7 +33,7 @@ DEFAULT_BUCKET = {
 }[DETECTED_ODS]
 DEFAULT_PCM_STORAGE = f's3://nisar-{DETECTED_ODS}-rs-ondemand/products'
 DEFAULT_REPO = 'https://github.com/jplzhan/alos-to-insar.git'
-DEFAULT_VERSION = 'v3.0.1'
+DEFAULT_VERSION = 'v3.0.2'
 DEFAULT_BUILD_TICK_SECONDS = 30
 DEFAULT_AWS_PROFILE = 'saml-pub'
 DEFAULT_POLARIZATION = 'HH'
@@ -374,6 +376,42 @@ class PCM:
         self.num_jobs += 1
         return ret
 
+    def run_static_layer_onprem(self,
+                                track: int,
+                                frame: int,
+                                orbit_xml: str,
+                                pointing_xml: str,
+                                config: str='',
+                                queue: str='nisar-job_worker-onprem') -> str:
+        """Runs Static Workflow on-premise..
+        
+        Input Parameters:
+            - track: The relative orbit number of the frame to process.
+            - frame: The frame number to process for.
+            - orbit_xml: S3 URL of the orbit XML file.
+            - pointing_xml: S3 URL of the pointing XML file.
+            - config: YAML formatted string containing the config to pass to focus.py.
+            - queue: Name of the PCM queue to submit the job to (recommended is default).
+        """
+        ts, folder = self.get_str_time()
+        jt = self.get_job('static_workflow')
+        jt.set_input_params({
+            'track': track,
+            'frame': frame,
+            'orbit_xml': str(orbit_xml),
+            'pointing_xml': str(pointing_xml),
+            'config_yml': str(config),
+            'timestamp': ts,
+        })
+        ret = isce3_regex.RSLC_FORMAT.format(
+            polarization=NON_INSAR_POLARIZATION,
+            timestamp=ts)
+        ret = f'{DEFAULT_PCM_STORAGE}/L1_L_RSLC/{folder}/{ret}'
+        logger.info(f'Submitting static workflow onprem job... (storage: {ret})')
+        self.job_set.append(jt.submit_job(queue=queue))
+        self.num_jobs += 1
+        return ret
+
     def run_test_local_dem(self,
                            track: int,
                            frame: int,
@@ -420,9 +458,9 @@ class PCM:
                 f.write(header.strip())
             for item in io_list:
                 f.write('\n')
-                f.write(item[0])
+                f.write(str(item[0]))
                 for i in range(1, len(item)):
-                    f.write(f',{item[i]}')
+                    f.write(f',{str(item[i])}')
 
 
     @staticmethod
@@ -445,3 +483,60 @@ class PCM:
             subprocess.run(f'aws s3 cp {full_s3_path} {args.output_bucket}/{dest_fname}', shell=True, check=True)
 
 
+# 1. Define a global variable for the S3 client
+# This ensures it persists across calls within the same process
+s3_client = None
+
+def s3_init_worker():
+    """
+    Initializes the S3 client once per worker process.
+    This prevents the overhead of creating a new session for every file.
+    """
+    global s3_client
+    s3_client = boto3.client('s3')
+
+def s3_upload_file(task):
+    """
+    Worker function to upload a single file.
+    task: tuple of (local_path, bucket_name, s3_key)
+    """
+    local_path, bucket, key = task
+    try:
+        # Use the global client initialized in s3_init_worker
+        s3_client.s3_upload_file(local_path, bucket, key)
+        return f"Uploaded: {key}"
+    except Exception as e:
+        return f"Failed to upload {local_path}: {str(e)}"
+
+def s3_upload_directory(outdir_list: list[str], output_bucket: str):
+    # Clean the bucket name (handle cases where input is "s3://my-bucket")
+    bucket_name = output_bucket.replace("s3://", "").rstrip("/")
+    
+    upload_tasks = []
+
+    # 2. Gather all files first (Task Generation)
+    # We replicate the --recursive --exclude "*" --include "*.h5" logic here
+    for link, outdir in outdir_list:
+        logger.info(f'Scanning files for {link} -> {outdir}')
+
+        for root, dirs, files in os.walk(outdir):
+            for file in files:
+                if file.endswith('.h5'):
+                    local_path = os.path.join(root, file)
+                    
+                    # Calculate key relative to outdir to maintain folder structure in S3
+                    # e.g., /tmp/data/sub/file.h5 -> sub/file.h5
+                    relative_path = os.path.relpath(local_path, start=outdir)
+                    s3_key = relative_path 
+                    
+                    upload_tasks.append((local_path, bucket_name, s3_key))
+
+    logger.info(f"Found {len(upload_tasks)} .h5 files to upload. Starting pool...")
+
+    # 3. Process uploads in parallel (Task Execution)
+    # initializer=s3_init_worker ensures the client is created once per core
+    with Pool(processes=cpu_count(), initializer=s3_init_worker) as pool:
+        # map handles the queueing of tasks to workers
+        results = pool.map(s3_upload_file, upload_tasks)
+
+    logger.info("Upload complete.")

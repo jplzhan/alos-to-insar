@@ -1,0 +1,38 @@
+runconfig:
+  groups:
+    dynamic_ancillary_file_group:
+      dem_raster_file: dem.vrt
+      water_mask_raster_file: WATERMASK.vrt
+      orbit_xml_file: NISAR_ANC_L_PR_FOE_20250424T071334_20230110T095833_20230110T155908.xml
+      pointing_xml_file: NISAR_ANC_L_PR_FRP_20250424T071334_20230110T095833_20230110T155908.xml
+
+    primary_executable:
+      product_version: '0.0.0'
+      product_doi: <TBD>
+      composite_release_id: A10000
+      processing_type: PR
+      processing_center: JPL
+      validity_start_datetime: '1999-12-31T23:59:59'
+      product_counter: 1
+
+    geometry:
+      relative_orbit_number: 106
+      frame_number: 19
+
+    processing:
+      geo_grid:
+        epsg: 32611
+        top_left:
+          x: 336960.0
+          y: 4003200.0
+        bottom_right:
+          x: 686160.0
+          y: 3664080.0
+        posting:
+          x: 80.0
+          y: 80.0
+
+      ephemeris:
+        start_time: '2023-01-10T12:58:33.604446'
+        end_time: '2023-01-10T12:59:08.342420'
+

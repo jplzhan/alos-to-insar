@@ -1,0 +1,47 @@
+{
+  "submission_type": "iteration",
+  "params": [
+    {
+      "name": "track",
+      "from": "submitter",
+      "type": "text",
+      "description": "int",
+      "default": "1"
+    },
+    {
+      "name": "frame",
+      "from": "submitter",
+      "type": "text",
+      "description": "int",
+      "default": "5"
+    },
+    {
+      "name": "orbit_xml",
+      "from": "submitter",
+      "type": "text",
+      "default": "/home/jovyan/alos-to-insar/data/track34_frame72_west_himalayas/NISAR_ANC_L_PR_FOE_20250424T071519_20230105T103711_20230105T163746.xml"
+    },
+    {
+      "name": "pointing_xml",
+      "from": "submitter",
+      "type": "text",
+      "default": "/home/jovyan/alos-to-insar/data/track34_frame72_west_himalayas/NISAR_ANC_L_PR_FRP_20250424T071519_20230105T103711_20230105T163746.xml"
+    },
+    {
+      "name": "config_yml",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "/home/jovyan/alos-to-insar/data/track34_frame72_west_himalayas/static.yml"
+    },
+    {
+      "name": "timestamp",
+      "from": "submitter",
+      "type": "text",
+      "description": "string",
+      "default": "20240131T0123456"
+    }
+  ],
+  "component": "tosca",
+  "label": "STATIC LAYER PGE"
+}

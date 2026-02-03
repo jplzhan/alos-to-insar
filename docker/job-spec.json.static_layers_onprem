@@ -1,0 +1,40 @@
+{
+  "command": "notebook-pge-wrapper execute /home/jovyan/alos-to-insar/notebook_pges/static_layers_onprem.ipynb",
+  "time_limit": 86400,
+  "soft_time_limit": 86400,
+  "disk_usage": "500GB",
+  "required_queues": [
+    "factotum-job_worker-small"
+  ],
+  "imported_worker_files": {
+    "$HOME/.aws": "/home/jovyan/.aws",
+    "$HOME/dem_archive": "/home/jovyan/dem_archive",
+    "$HOME/watermask_archive": "/home/jovyan/watermask_archive"
+  },
+  "params": [
+    {
+      "name": "track",
+      "destination": "context"
+    },
+    {
+      "name": "frame",
+      "destination": "context"
+    },
+    {
+      "name": "orbit_xml",
+      "destination": "context"
+    },
+    {
+      "name": "pointing_xml",
+      "destination": "context"
+    },
+    {
+      "name": "config_yml",
+      "destination": "context"
+    },
+    {
+      "name": "timestamp",
+      "destination": "context"
+    }
+  ]
+}
