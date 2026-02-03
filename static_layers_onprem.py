@@ -20,38 +20,39 @@ def generate_configs(json_data, template_config, cli_posting=None):
     for item in json_data:
         # Create a deep copy to ensure we don't modify the original
         new_config = copy.deepcopy(template_config)
+        config_node = new_config['runconfig']['groups']
         
         # --- 1. Map Geometry & Grid ---
-        new_config['runconfig']['processing']['geo_grid']['epsg'] = item['epsg']
+        config_node['processing']['geo_grid']['epsg'] = item['epsg']
         
-        new_config['runconfig']['processing']['geo_grid']['top_left']['x'] = item['mapTopLeftX']
-        new_config['runconfig']['processing']['geo_grid']['top_left']['y'] = item['mapTopLeftY']
+        config_node['processing']['geo_grid']['top_left']['x'] = item['mapTopLeftX']
+        config_node['processing']['geo_grid']['top_left']['y'] = item['mapTopLeftY']
         
-        new_config['runconfig']['processing']['geo_grid']['bottom_right']['x'] = item['mapBottomRightX']
-        new_config['runconfig']['processing']['geo_grid']['bottom_right']['y'] = item['mapBottomRightY']
+        config_node['processing']['geo_grid']['bottom_right']['x'] = item['mapBottomRightX']
+        config_node['processing']['geo_grid']['bottom_right']['y'] = item['mapBottomRightY']
 
         # --- 2. Map Ephemeris (Time) ---
-        new_config['runconfig']['processing']['ephemeris']['start_time'] = item['aux_coverage']['matched_segment']['start']
-        new_config['runconfig']['processing']['ephemeris']['end_time'] = item['aux_coverage']['matched_segment']['end']
+        config_node['processing']['ephemeris']['start_time'] = item['aux_coverage']['matched_segment']['start']
+        config_node['processing']['ephemeris']['end_time'] = item['aux_coverage']['matched_segment']['end']
 
         # --- 3. Map Orbit & Frame ---
-        new_config['runconfig']['geometry']['relative_orbit_number'] = item['track']
-        new_config['runconfig']['geometry']['frame_number'] = item['frame']
+        config_node['geometry']['relative_orbit_number'] = item['track']
+        config_node['geometry']['frame_number'] = item['frame']
 
         # --- 4. Map Ancillary Files (Filename Only) ---
         orbit_path = item['aux_coverage']['files']['orbit']['path']
         pointing_path = item['aux_coverage']['files']['pointing']['path']
         
-        new_config['runconfig']['groups']['dynamic_ancillary_file_group']['orbit_xml_file'] = os.path.basename(orbit_path)
-        new_config['runconfig']['groups']['dynamic_ancillary_file_group']['pointing_xml_file'] = os.path.basename(pointing_path)
+        config_node['dynamic_ancillary_file_group']['orbit_xml_file'] = os.path.basename(orbit_path)
+        config_node['dynamic_ancillary_file_group']['pointing_xml_file'] = os.path.basename(pointing_path)
 
         # --- 5. Handle Posting ---
         # Logic: Check specific JSON item first, then fallback to CLI arg, then keep template default.
         posting_val = item.get('posting', cli_posting)
         
         if posting_val is not None:
-            new_config['runconfig']['processing']['geo_grid']['posting']['x'] = float(posting_val)
-            new_config['runconfig']['processing']['geo_grid']['posting']['y'] = float(posting_val)
+            config_node['processing']['geo_grid']['posting']['x'] = float(posting_val)
+            config_node['processing']['geo_grid']['posting']['y'] = float(posting_val)
 
         generated_configs.append({
             'track': item['track'],
