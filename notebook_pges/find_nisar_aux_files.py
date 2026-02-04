@@ -27,7 +27,7 @@ def find_nisar_aux_files(
     s3_client: Optional[Any] = None
 ) -> SearchResult:
     """
-    Finds S3 orbit (MOE) and pointing (NRP) files covering the start_dt -> end_dt.
+    Finds S3 orbit (POE) and pointing (NRP) files covering the start_dt -> end_dt.
     
     Args:
         start_dt: Request start time.
@@ -75,6 +75,6 @@ def find_nisar_aux_files(
         return None
 
     return {
-        "orbit": find_file("MOE"),
+        "orbit": find_file("POE"),
         "pointing": find_file("NRP")
     }

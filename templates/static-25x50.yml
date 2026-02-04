@@ -42,7 +42,7 @@ runconfig:
         spacing:
           az_spacing: 0.000657894736842105
           # Values for 2.5 x 5 -> this value should actually be slightly larger but it's fine for now
-          #rg_spacing: 1.5614190520833333
+          rg_spacing: 1.5614190520833333
         
           # Values for 80x80
-          rg_spacing: 3.122838104
+          #rg_spacing: 3.122838104

@@ -27,7 +27,10 @@ RUN curl -sSL https://github.com/conda-forge/miniforge/releases/download/24.7.1-
 WORKDIR $HOME
 
 # 3. Clone ISCE3 (Source for spec-file and build)
-RUN git clone --depth 1 --branch v0.25.7 https://github.com/isce-framework/isce3.git
+#RUN git clone --depth 1 --branch v0.25.7 https://github.com/isce-framework/isce3.git
+RUN git clone --depth 1 --branch fddc4eacd02655af77f026943bd300416c960441 https://github.com/isce-framework/isce3.git
+
+
 
 # 4. Create Environments & Install Dependencies (IN BOTH ENVS)
 RUN set -ex \
