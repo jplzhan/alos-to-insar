@@ -8,8 +8,8 @@
   ],
   "imported_worker_files": {
     "$HOME/.aws": "/home/jovyan/.aws",
-    "$HOME/dem_archive": "/home/jovyan/dem_archive",
-    "$HOME/watermask_archive": "/home/jovyan/watermask_archive"
+    "/data/share/dem_archive": "/home/jovyan/dem_archive",
+    "/data/share/watermask_archive": "/home/jovyan/watermask_archive"
   },
   "params": [
     {
