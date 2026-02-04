@@ -107,6 +107,8 @@ def main() -> int:
     # Load inputs
     with open(args.json_file, 'r') as f:
         coverage_data = json.load(f)
+        if not isinstance(coverage_data, list):
+            coverage_data = [coverage_data]
 
     with open(args.config, 'r') as f:
         yaml_template = yaml.safe_load(f)

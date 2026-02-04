@@ -28,7 +28,11 @@ WORKDIR $HOME
 
 # 3. Clone ISCE3 (Source for spec-file and build)
 #RUN git clone --depth 1 --branch v0.25.7 https://github.com/isce-framework/isce3.git
-RUN git clone --depth 1 --branch fddc4eacd02655af77f026943bd300416c960441 https://github.com/isce-framework/isce3.git
+RUN mkdir isce3 && cd isce3 && \
+    git init && \
+    git remote add origin https://github.com/isce-framework/isce3.git && \
+    git fetch --depth 1 origin fddc4eacd02655af77f026943bd300416c960441 && \
+    git checkout FETCH_HEAD
 
 
 
