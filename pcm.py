@@ -50,6 +50,71 @@ logging.basicConfig(stream=sys.stdout, format=log_format, level=logging.INFO)
 logger = logging.getLogger('pcm_logger')
 
 
+
+STATIC_CONFIG_PARAMS = {
+    (80, 80): [
+        {
+            "l2_product": "GUNW, GOFF",
+            "range_bandwidth": "All",
+            "slant_range_spacing": None
+        },
+        {
+            "l2_product": "GCOV",
+            "range_bandwidth": "5 MHz",
+            "slant_range_spacing": 24.98270483
+        }
+    ],
+    (20, 20): [
+        {
+            "l2_product": "GCOV",
+            "range_bandwidth": "20 MHz",
+            "slant_range_spacing": 6.245676208
+        },
+        {
+            "l2_product": "GCOV",
+            "range_bandwidth": "77 MHz",
+            "slant_range_spacing": 1.561419052
+        }
+    ],
+    (10, 10): [
+        {
+            "l2_product": "GCOV",
+            "range_bandwidth": "40 MHz",
+            "slant_range_spacing": 3.122838104
+        }
+    ],
+    (40, 5): [
+        {
+            "l2_product": "GSLC",
+            "range_bandwidth": "5 MHz",
+            "slant_range_spacing": 24.98270483
+        }
+    ],
+    (10, 5): [
+        {
+            "l2_product": "GSLC",
+            "range_bandwidth": "20 MHz",
+            "slant_range_spacing": 6.245676208
+        }
+    ],
+    (5, 5): [
+        {
+            "l2_product": "GSLC",
+            "range_bandwidth": "40 MHz",
+            "slant_range_spacing": 3.122838104
+        }
+    ],
+    (2.5, 5): [
+        {
+            "l2_product": "GSLC",
+            "range_bandwidth": "77 MHz",
+            "slant_range_spacing": 1.561419052
+        }
+    ]
+}
+
+
+
 class PCM:
     """Class for launching PCM jobs."""
     def __init__(self,

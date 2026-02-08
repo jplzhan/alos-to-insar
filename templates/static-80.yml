@@ -45,4 +45,16 @@ runconfig:
           #rg_spacing: 1.5614190520833333
         
           # Values for 80x80
-          rg_spacing: 3.122838104
+          #rg_spacing: 3.122838104
+          rg_spacing: 24.982704833333333
+        #bounding_box:
+          #start_time: '2026-01-09T06:04:59.312053'
+          #end_time: '2026-01-09T06:04:23.858982'
+          #start_range: 80000
+          #end_range: 100000
+          # [OPTIONAL] Additional azimuth time margin, in seconds, to add to the start
+          # and end of the radar grid used to form static layers.
+          #az_margin: 0.25
+          # [OPTIONAL] Additional slant range margin, in meters, to add to the near and
+          # far edges of the radar grid used to form static layers.
+          #rg_margin:

@@ -5,12 +5,12 @@ import os
 import argparse
 
 import subprocess
-from pcm import PCM, AWS, SCRIPT_DIR, logger
+from pcm import PCM, AWS, SCRIPT_DIR, s3_upload_directory, logger, STATIC_CONFIG_PARAMS
 
 
 def generate_configs(json_data, template_config, cli_posting=None):
     """
-    Generates a list of runconfig dictionaries based on a template and a list of 
+    Generates a list of runconfig dictionaries based on a template and a list of
     frame metadata.
     """
     generated_configs = []
@@ -21,13 +21,13 @@ def generate_configs(json_data, template_config, cli_posting=None):
         # Create a deep copy to ensure we don't modify the original
         new_config = copy.deepcopy(template_config)
         config_node = new_config['runconfig']['groups']
-        
+
         # --- 1. Map Geometry & Grid ---
         config_node['processing']['geo_grid']['epsg'] = item['epsg']
-        
+
         config_node['processing']['geo_grid']['top_left']['x'] = item['mapTopLeftX']
         config_node['processing']['geo_grid']['top_left']['y'] = item['mapTopLeftY']
-        
+
         config_node['processing']['geo_grid']['bottom_right']['x'] = item['mapBottomRightX']
         config_node['processing']['geo_grid']['bottom_right']['y'] = item['mapBottomRightY']
 
@@ -42,17 +42,50 @@ def generate_configs(json_data, template_config, cli_posting=None):
         # --- 4. Map Ancillary Files (Filename Only) ---
         orbit_path = item['aux_coverage']['files']['orbit']['path']
         pointing_path = item['aux_coverage']['files']['pointing']['path']
-        
+
         config_node['dynamic_ancillary_file_group']['orbit_xml_file'] = os.path.basename(orbit_path)
         config_node['dynamic_ancillary_file_group']['pointing_xml_file'] = os.path.basename(pointing_path)
+
+        # --- 4b. Map aux_coverage.bounding_box to radar_grid.bounding_box ---
+        if 'bounding_box' in item['aux_coverage']:
+            processing = config_node['processing']
+            if 'radar_grid' not in processing:
+                processing['radar_grid'] = {}
+            if 'bounding_box' not in processing['radar_grid']:
+                processing['radar_grid']['bounding_box'] = {}
+            bbox = processing['radar_grid']['bounding_box']
+            for key, value in item['aux_coverage']['bounding_box'].items():
+                bbox[key] = value
 
         # --- 5. Handle Posting ---
         # Logic: Check specific JSON item first, then fallback to CLI arg, then keep template default.
         posting_val = item.get('posting', cli_posting)
-        
+
         if posting_val is not None:
             config_node['processing']['geo_grid']['posting']['x'] = float(posting_val)
             config_node['processing']['geo_grid']['posting']['y'] = float(posting_val)
+
+        # Look up slant_range_spacing from STATIC_CONFIG_PARAMS using (x, y) posting
+        post_x = config_node['processing']['geo_grid']['posting']['x']
+        post_y = config_node['processing']['geo_grid']['posting']['y']
+        posting_key = (int(round(float(post_x))), int(round(float(post_y))))
+        if posting_key in STATIC_CONFIG_PARAMS:
+            params_list = STATIC_CONFIG_PARAMS[posting_key]
+            slant_range_spacing = params_list[0].get('slant_range_spacing')
+            if 'radar_grid' not in config_node['processing']:
+                config_node['processing']['radar_grid'] = {}
+            if 'spacing' not in config_node['processing']['radar_grid']:
+                config_node['processing']['radar_grid']['spacing'] = {}
+            config_node['processing']['radar_grid']['spacing']['rg_spacing'] = slant_range_spacing
+        else:
+            logger.warning(
+                "Posting (x, y)=%s not found in STATIC_CONFIG_PARAMS for track=%s, frame=%s. "
+                "Expected one of: %s. rg_spacing will not be set for this config.",
+                posting_key, item['track'], item['frame'], sorted(STATIC_CONFIG_PARAMS.keys()),
+            )
+            response = input("Continue anyway? [y/N]: ").strip().lower()
+            if response not in ('y', 'yes'):
+                raise SystemExit(1)
 
         generated_configs.append({
             'track': item['track'],
@@ -72,17 +105,17 @@ def generate_configs(json_data, template_config, cli_posting=None):
 def main() -> int:
     """Main function."""
     parser = argparse.ArgumentParser(description="Generate runconfigs from NISAR coverage results.")
-    
+
     # Required positional argument for the JSON input
     parser.add_argument('json_file', help="Path to nisar_coverage_results.json")
-    
+
     # Determine the default path relative to this script's location
     # This finds the directory this script lives in, then looks for templates/static.yml
     script_dir = os.path.dirname(os.path.abspath(__file__))
     default_template_path = os.path.join(script_dir, 'templates', 'static-80.yml')
 
     # Optional argument for the config template
-    parser.add_argument('-c', '--config', 
+    parser.add_argument('-c', '--config',
                         default=default_template_path,
                         help=f"Path to template YAML file. Defaults to: {default_template_path}")
     parser.add_argument(
@@ -94,9 +127,9 @@ def main() -> int:
         type=str,
         help='S3 URL to where the RSLC results will be uploaded.',
     )
-    
+
     parser.add_argument('--posting', type=float, help="Global posting value override (optional)")
-    
+
     args = parser.parse_args()
 
     # --- Validation ---
@@ -117,7 +150,7 @@ def main() -> int:
     config_list = generate_configs(coverage_data, yaml_template, args.posting)
 
     print(f"Successfully generated {len(config_list)} configurations in memory using template: {args.config}\n")
-    
+
     outdir_list = []
     pcm = PCM()
     start_time_str, _ = pcm.get_str_time()
@@ -141,8 +174,8 @@ def main() -> int:
         args.output_bucket = args.output_bucket[:-1]
 
     # Copy results to the specified output bucket
-    pcm.s3_upload_directory(outdir_list, args.output_bucket)
-    
+    s3_upload_directory(outdir_list, args.output_bucket)
+
     return 0
 
 
