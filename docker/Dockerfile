@@ -31,7 +31,7 @@ WORKDIR $HOME
 RUN mkdir isce3 && cd isce3 && \
     git init && \
     git remote add origin https://github.com/isce-framework/isce3.git && \
-    git fetch --depth 1 origin fddc4eacd02655af77f026943bd300416c960441 && \
+    git fetch --depth 1 origin f171e2217d48a46a784b20753ae7b5d4682c153b && \
     git checkout FETCH_HEAD
 
 
