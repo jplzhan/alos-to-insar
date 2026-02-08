@@ -59,16 +59,26 @@ def generate_configs(json_data, template_config, cli_posting=None):
 
         # --- 5. Handle Posting ---
         # Logic: Check specific JSON item first, then fallback to CLI arg, then keep template default.
+        # Item posting may be a single value (x and y) or a pair: [x, y], (x, y), or {"x": _, "y": _}.
         posting_val = item.get('posting', cli_posting)
 
         if posting_val is not None:
-            config_node['processing']['geo_grid']['posting']['x'] = float(posting_val)
-            config_node['processing']['geo_grid']['posting']['y'] = float(posting_val)
+            if isinstance(posting_val, (list, tuple)) and len(posting_val) >= 2:
+                post_x_val = float(posting_val[0])
+                post_y_val = float(posting_val[1])
+            elif isinstance(posting_val, dict) and 'x' in posting_val and 'y' in posting_val:
+                post_x_val = float(posting_val['x'])
+                post_y_val = float(posting_val['y'])
+            else:
+                post_x_val = post_y_val = float(posting_val)
+            config_node['processing']['geo_grid']['posting']['x'] = post_x_val
+            config_node['processing']['geo_grid']['posting']['y'] = post_y_val
 
-        # Look up slant_range_spacing from STATIC_CONFIG_PARAMS using (x, y) posting
+        # Look up slant_range_spacing from STATIC_CONFIG_PARAMS using (x, y) posting.
+        # Keys are ints scaled by 10 so e.g. (2.5, 5) -> (25, 50) for reliable lookup.
         post_x = config_node['processing']['geo_grid']['posting']['x']
         post_y = config_node['processing']['geo_grid']['posting']['y']
-        posting_key = (int(round(float(post_x))), int(round(float(post_y))))
+        posting_key = (int(round(float(post_x) * 10)), int(round(float(post_y) * 10)))
         if posting_key in STATIC_CONFIG_PARAMS:
             params_list = STATIC_CONFIG_PARAMS[posting_key]
             slant_range_spacing = params_list[0].get('slant_range_spacing')
@@ -79,9 +89,9 @@ def generate_configs(json_data, template_config, cli_posting=None):
             config_node['processing']['radar_grid']['spacing']['rg_spacing'] = slant_range_spacing
         else:
             logger.warning(
-                "Posting (x, y)=%s not found in STATIC_CONFIG_PARAMS for track=%s, frame=%s. "
+                "Posting (x, y)=(%s, %s) not found in STATIC_CONFIG_PARAMS for track=%s, frame=%s. "
                 "Expected one of: %s. rg_spacing will not be set for this config.",
-                posting_key, item['track'], item['frame'], sorted(STATIC_CONFIG_PARAMS.keys()),
+                post_x, post_y, item['track'], item['frame'], sorted(STATIC_CONFIG_PARAMS.keys()),
             )
             response = input("Continue anyway? [y/N]: ").strip().lower()
             if response not in ('y', 'yes'):

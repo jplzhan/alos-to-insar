@@ -51,8 +51,9 @@ logger = logging.getLogger('pcm_logger')
 
 
 
+# Posting keys are (x*10, y*10) as ints so e.g. (2.5, 5) -> (25, 50) for reliable lookup.
 STATIC_CONFIG_PARAMS = {
-    (80, 80): [
+    (800, 800): [
         {
             "l2_product": "GUNW, GOFF",
             "range_bandwidth": "All",
@@ -64,7 +65,7 @@ STATIC_CONFIG_PARAMS = {
             "slant_range_spacing": 24.98270483
         }
     ],
-    (20, 20): [
+    (200, 200): [
         {
             "l2_product": "GCOV",
             "range_bandwidth": "20 MHz",
@@ -76,35 +77,35 @@ STATIC_CONFIG_PARAMS = {
             "slant_range_spacing": 1.561419052
         }
     ],
-    (10, 10): [
+    (100, 100): [
         {
             "l2_product": "GCOV",
             "range_bandwidth": "40 MHz",
             "slant_range_spacing": 3.122838104
         }
     ],
-    (40, 5): [
+    (400, 50): [
         {
             "l2_product": "GSLC",
             "range_bandwidth": "5 MHz",
             "slant_range_spacing": 24.98270483
         }
     ],
-    (10, 5): [
+    (100, 50): [
         {
             "l2_product": "GSLC",
             "range_bandwidth": "20 MHz",
             "slant_range_spacing": 6.245676208
         }
     ],
-    (5, 5): [
+    (50, 50): [
         {
             "l2_product": "GSLC",
             "range_bandwidth": "40 MHz",
             "slant_range_spacing": 3.122838104
         }
     ],
-    (2.5, 5): [
+    (25, 50): [
         {
             "l2_product": "GSLC",
             "range_bandwidth": "77 MHz",
@@ -130,7 +131,7 @@ class PCM:
         self.mozart = otello.Mozart()
         self.job_set = otello.JobSet()
         self.num_jobs = 0
-        
+
         # TODO - Check that all job types exist
         self.job_types = self.mozart.get_job_types()
         self.jobs = {
@@ -143,14 +144,14 @@ class PCM:
             'static_workflow': None,
             'static_layers_onprem': None,
         }
-        
+
     def build_pcm(self, tick_rate:float=DEFAULT_BUILD_TICK_SECONDS, rebuild: bool=False):
         """Initialization method for building the PCM job.
-        
+
         Input Parameters:
             - tick_rate: Number of seconds to wait before refreshing the build status.
             - rebuild: Whether or not to rebuild the job even if the previous job was a success.
-            
+
         Raises a RuntimeError if the build is unsuccessful.
         """
         # Check if the job has previously been built
@@ -188,31 +189,31 @@ class PCM:
 
         if build_status['result'] != 'SUCCESS':
             raise RuntimeError(f'{self.repo}:{self.version} failed, please check the build URL:\n{build_status}')
-        
+
         logger.info(f'\'{self.repo}:{self.version}\' successfully built, now continuing...')
-        
+
     def wait_for_completion(self, wait_seconds: float=15):
         """Wait for all submitted jobs in the job set to complete."""
         logger.info(f'Waiting {wait_seconds} seconds for start up...')
         time.sleep(wait_seconds)
         logger.info(f'Now waiting for completion of {len(self.job_set)} jobs...')
         self.job_set.wait_for_completion()
-    
+
     def get_str_time(self) -> str:
         """Returns the current timestamp in the format used for PCM stage-out and folder format.
-        
+
         The number of jobs is added in seconds to ensure that no two jobs will have the same timestamp.
         """
         now = datetime.now() + timedelta(0, self.num_jobs)
         return now.strftime('%Y%m%dT%H%M%S'), now.strftime('%Y/%m/%d')
-    
+
     def run_alos_to_rslc(self,
                         data_link: str,
                         gpu_enabled: bool=True,
                         config: str='',
                         queue: str='nisar-job_worker-sciflo-rslc') -> str:
         """Runs ALOS to RSLC.
-        
+
         Input Parameters:
             - data_link: S3 URL to the ALOS-1 data to be processed into NISAR L0B and then RSLC.
             - gpu_enabled: Whether to run focus.py using the GPU.
@@ -235,13 +236,13 @@ class PCM:
         self.job_set.append(jt.submit_job(queue=queue))
         self.num_jobs += 1
         return ret
-        
+
     def run_alos2_to_rslc(self,
                         data_link: str,
                         gpu_enabled: bool=True,
                         queue: str='nisar-job_worker-sciflo-rslc') -> str:
         """Runs ALOS-2 to RSLC.
-        
+
         Input Parameters:
             - data_link: S3 URL to the ALOS-2 data to be processed into NISAR RSLC.
             - gpu_enabled: Whether to run focus.py using the GPU.
@@ -270,7 +271,7 @@ class PCM:
                         config: str='',
                         queue: str='nisar-job_worker-sciflo-rslc') -> str:
         """Runs L0B to RSLC.
-        
+
         Input Parameters:
             - data_link: S3 URL to the L0B data to be processed into RSLC.
             - gpu_enabled: Whether to run focus.py using the GPU.
@@ -301,7 +302,7 @@ class PCM:
                          config: str='',
                          queue: str='nisar-job_worker-sciflo-gslc') -> str:
         """Runs RSLC to GSLC.
-        
+
         Input Parameters:
             - data_link: S3 URL to the L0B data to be processed into RSLC.
             - dem: S3 URL to the DEM to be processed.
@@ -326,7 +327,7 @@ class PCM:
         self.job_set.append(jt.submit_job(queue=queue))
         self.num_jobs += 1
         return ret
-    
+
     def run_rslc_to_gcov(self,
                         data_link: str,
                         dem: str,
@@ -334,7 +335,7 @@ class PCM:
                         config: str='',
                         queue: str='nisar-job_worker-sciflo-gcov') -> str:
         """Runs RSLC to GCOV.
-        
+
         Input Parameters:
             - data_link: S3 URL to the L0B data to be processed into RSLC.
             - dem: S3 URL to the DEM to be processed.
@@ -369,7 +370,7 @@ class PCM:
                           config: str='',
                           queue: str=None) -> str:
         """Runs RSLC to INSAR.
-        
+
         Input Parameters:
             - rslc_1: S3 URL to the first RLSC to be processed.
             - rslc_2: S3 URL to the second RSLC to be processed.
@@ -412,7 +413,7 @@ class PCM:
                             #queue: str='nisar-job_worker-sciflo-gcov') -> str:
                             queue: str='nisar-job_worker-large') -> str:
         """Runs Static Workflow.
-        
+
         Input Parameters:
             - orbit_xml: Raw text of the orbit XML file.
             - pointing_xml: Raw text of the pointing XML file.
@@ -450,7 +451,7 @@ class PCM:
                                  config: str='',
                                  queue: str='nisar-job_worker-onprem') -> str:
         """Runs Static Workflow on-premise..
-        
+
         Input Parameters:
             - track: The relative orbit number of the frame to process.
             - frame: The frame number to process for.
@@ -502,7 +503,7 @@ class PCM:
         self.job_set.append(jt.submit_job(queue=queue))
         self.num_jobs += 1
         return ret
-        
+
     def get_job(self, job_name: str):
         """Gets the listed job type from Mozart and initializes it."""
         if self.jobs.get(job_name) is None:
@@ -577,7 +578,7 @@ def s3_upload_file(task):
 def s3_upload_directory(outdir_list: list[str], output_bucket: str):
     # Clean the bucket name (handle cases where input is "s3://my-bucket")
     bucket_name = output_bucket.replace("s3://", "").rstrip("/")
-    
+
     upload_tasks = []
 
     # 2. Gather all files first (Task Generation)
@@ -589,12 +590,12 @@ def s3_upload_directory(outdir_list: list[str], output_bucket: str):
             for file in files:
                 if file.endswith('.h5'):
                     local_path = os.path.join(root, file)
-                    
+
                     # Calculate key relative to outdir to maintain folder structure in S3
                     # e.g., /tmp/data/sub/file.h5 -> sub/file.h5
                     relative_path = os.path.relpath(local_path, start=outdir)
-                    s3_key = relative_path 
-                    
+                    s3_key = relative_path
+
                     upload_tasks.append((local_path, bucket_name, s3_key))
 
     logger.info(f"Found {len(upload_tasks)} .h5 files to upload. Starting pool...")
