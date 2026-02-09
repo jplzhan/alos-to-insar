@@ -570,7 +570,7 @@ def s3_upload_file(task):
     local_path, bucket, key = task
     try:
         # Use the global client initialized in s3_init_worker
-        s3_client.s3_upload_file(local_path, bucket, key)
+        s3_client.upload_file(local_path, bucket, key)
         return f"Uploaded: {key}"
     except Exception as e:
         return f"Failed to upload {local_path}: {str(e)}"
@@ -603,7 +603,14 @@ def s3_upload_directory(outdir_list: list[str], output_bucket: str):
     # 3. Process uploads in parallel (Task Execution)
     # initializer=s3_init_worker ensures the client is created once per core
     with Pool(processes=cpu_count(), initializer=s3_init_worker) as pool:
-        # map handles the queueing of tasks to workers
         results = pool.map(s3_upload_file, upload_tasks)
+
+    # Check for silent failures
+    errors = [res for res in results if res is not None]
+    if errors:
+        print(f"ERROR: {len(errors)} files failed to upload!")
+        print(errors[0]) # Print the first error to debug
+    else:
+        print(f"Successfully uploaded {len(upload_tasks)} files.")
 
     logger.info("Upload complete.")
